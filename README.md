@@ -1,4 +1,6 @@
 # ReadMe #
+[![DOI](https://zenodo.org/badge/350679832.svg)](https://zenodo.org/badge/latestdoi/350679832)
+
 This is the ReadMe for the GitHub repository that contains supplemental data and codes for the in review manuscript "Low variability, snowmelt runoff inhibits coupling of climate, tectonics, and topography in the Greater Caucasus" by Forte et al. submitted to Earth and Planetary Science Letters. Below are brief descriptions of categories of items included in this repository.
 
 Note that this does not include all codes to process some raw data that we either do not have permission to redistribute (e.g., GRDC or ECAD time series) or is impractical to rehost in their entirety (TRMM or MOD10C2 time series). In these cases, we provide the processed values or products.
