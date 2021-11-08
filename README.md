@@ -6,6 +6,9 @@ Note that this does not include all codes to process some raw data that we eithe
 ## Supplemental Methods and Figures
 A pdf of the supplemental methods and figures referenced in the main text of the manuscript. An identical version is submitted with the in review manuscript as supplementary material.
 
+## Lithology Compilations
+A pdf describing the compilation of geologic maps to describe the lithology of each catchment. Included in this are lithologic maps and distributions for each sampled catchment.
+
 ## Excel Tables
 Four excel supplemental tables referenced in the main text of the manuscript. Identical versions are submitted with the in review manuscript as supplementary material.
 
