@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 def set_constants(R,k_e,k_w=15,f=0.08313,omega_a=0.50,
-                   omega_s=0.25,alpha=2/3,beta=2/3,a=1.5,tau_c=45):
+                   omega_s=0.25,alpha=2/3,beta=2/3,a=1.5,tau_c=45,dist_type='inv_gamma'):
     # Convert R in mm/day to k_q in m/s
     k_q=R/(24*60*60*10*100)
     # Derived parameters
@@ -27,7 +27,7 @@ def set_constants(R,k_e,k_w=15,f=0.08313,omega_a=0.50,
     K = k_e*(k_t**a)*(k_w**(-a*alpha)) #erosional efficiency
     Psi_c=k_e*(tau_c**a)
     con_list=[k_e,k_q,k_t,k_w,f,y,m,n,omega_a,omega_s,alpha,beta,a,
-              tau_c,epsilon,K,Psi_c]
+              tau_c,epsilon,K,Psi_c,dist_type]
     return con_list
 
 def unpack_constants(con_list):
@@ -48,14 +48,15 @@ def unpack_constants(con_list):
     epsilon=con_list[14]
     K=con_list[15]
     Psi_c=con_list[16]
+    dist_type=con_list[17]
     return (k_e,k_q,k_t,k_w,f,y,m,n,omega_a,omega_s,alpha,beta,a,
-            tau_c,epsilon,K,Psi_c)
+            tau_c,epsilon,K,Psi_c,dist_type)
 
 def an_thresh(E,k,con_list):
     # Convert to meters per second
     I=E/(1e6*365.25*24*60*60)
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
-     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c]=unpack_constants(con_list)
+     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)
     # Assume return time greater than one day
     p1=(K**(-1/n))*(k_q**(-m/n))
     p2_1=(k+1)*(k+1-y)*gamma(k+1)
@@ -70,7 +71,7 @@ def an_const(E,k,con_list):
     # Convert to meters per second
     I=E/(1e6*365.25*24*60*60)
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
-     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c]=unpack_constants(con_list)    
+     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)    
     # Assume return time greater than one day
     p1=K**(-1/n)*k_q**(-m/n)
     p3=(Psi_c+I)**(1/n)
@@ -82,7 +83,7 @@ def an_const(E,k,con_list):
 
 def ero_law(Ks,Q_star,con_list):
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
-     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c]=unpack_constants(con_list)    
+     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)    
     # Redefine K
     K=K*(k_q**m)
     # Main Calculation
@@ -91,6 +92,10 @@ def ero_law(Ks,Q_star,con_list):
 
 def inv_gamma(Q_star,k):
     pdf=np.exp(-k/Q_star)*((k**(k+1))*Q_star**(-(2+k)))/gamma(k+1)
+    return pdf
+
+def wbl(Q_star,k,sc):
+    pdf=(k/sc)*((Q_star/sc)**(k-1))*np.exp((-1)*(Q_star/sc)**k)
     return pdf
 
 def ccdf_gamma(Q_star,k):
@@ -102,23 +107,47 @@ def ero_integrand(Ks,Q_star,k,con_list):
     pdf=inv_gamma(Q_star,k)
     return I*pdf
 
-def stim_one(Ks,k,con_list):
+def ero_integrand_w(Ks,Q_star,k,sc,con_list):
+    I=ero_law(Ks,Q_star,con_list)
+    pdf=wbl(Q_star,k,sc)
+    return I*pdf
+
+def stim_one(Ks,k,con_list,sc=-1):
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
-     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c]=unpack_constants(con_list)    
+     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)    
     # Set integration parameters
-    q_min=0.00368*k
-    q_max=1000000*np.exp(-k)
+    # q_min=0.00368*k
+    # q_max=1000000*np.exp(-k)
+    q_min=0.001
+    q_max=10000
     # Calculate Q_starc
     Q_starc = ((K/epsilon)*(Ks**n)*(k_q**m))**(-1/y)
     if Q_starc < q_min:
         Q_starc = q_min
     elif Q_starc > q_max:
         Q_starc = q_max-1
-    func=lambda x : ero_integrand(Ks,x,k,con_list)
-    [E,E_err]=integrate.quad(func,Q_starc,q_max)
+    if dist_type=='inv_gamma':
+        # func=lambda x : ero_integrand(Ks,x,k,con_list)
+        # [E,E_err]=integrate.quad(func,Q_starc,q_max)
+        x=np.logspace(np.log10(Q_starc),np.log10(q_max),1000)
+        y=ero_integrand(Ks,x,k,con_list)
+        E=integrate.simpson(y,x)
+        E_err=np.zeros(E.shape)
+    elif dist_type=='weibull':
+        if sc>0:
+            # func=lambda x : ero_integrand_w(Ks,x,k,sc,con_list)
+            # [E,E_err]=integrate.quad(func,Q_starc,q_max)
+            x=np.logspace(np.log10(Q_starc),np.log10(q_max),1000)
+            y=ero_integrand_w(Ks,x,k,sc,con_list)
+            E=integrate.simpson(y,x)
+            E_err=np.zeros(E.shape)
+        else:
+            raise Exception("Valid argument for the scale parameter must be supplied if using Weibull distribution")
+    
     return E,E_err,Q_starc    
 
-def stim_range(k,con_list,max_ksn=700,num_points=200,space_type='log'):
+def stim_range(k,con_list,sc=-1,max_ksn=700,num_points=200,space_type='log'):
+    dist_type=unpack_constants(con_list)[17]
     # Initialize variables
     if space_type=='log':
         Ks=np.logspace(0,np.log10(max_ksn),num=num_points)
@@ -126,9 +155,13 @@ def stim_range(k,con_list,max_ksn=700,num_points=200,space_type='log'):
         Ks=np.linspace(0,max_ksn,num=num_points)        
     E=np.zeros((num_points,1))
     E_err=np.zeros((num_points,1))
-    Q_starc=np.zeros((num_points,1))  
-    for i in range(len(Ks)):
-        [E[i],E_err[i],Q_starc[i]]=stim_one(Ks[i],k,con_list)
+    Q_starc=np.zeros((num_points,1))
+    if dist_type=='inv_gamma':
+        for i in range(len(Ks)):
+            [E[i],E_err[i],Q_starc[i]]=stim_one(Ks[i],k,con_list)
+    elif dist_type=='weibull':
+        for i in range(len(Ks)):
+            [E[i],E_err[i],Q_starc[i]]=stim_one(Ks[i],k,con_list,sc=sc)        
     return Ks,E,E_err,Q_starc
 
 def phi_est(k,con_list):
