@@ -390,7 +390,7 @@ tau_c_fix=np.median(tau_c_optim)
     
 # Fixed
 k_e=np.ones((num_clustb))*k_e_fix
-t_c=np.ones((4))*45
+t_c=np.ones((4))*tau_c_fix
 
 plt.figure(5,figsize=(25,10))
 
@@ -474,7 +474,7 @@ plt.subplot(2,1,2)
 for i in range(num_clustb):
     plt.scatter(emR[eidx==i],tau_c_optim[eidx==i],c=color_list[i],zorder=1)
     plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
-plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
+plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
 plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel('Optimized $\tau_{c}$')
     
