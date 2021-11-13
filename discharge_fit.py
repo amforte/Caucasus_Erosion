@@ -9,20 +9,56 @@ Created on Fri Nov  5 16:23:20 2021
 import pandas as pd
 import numpy as np
 from scipy.stats import weibull_min
+from scipy.stats import invgamma
 from scipy.special import gamma
+from scipy.optimize import minimize_scalar
 import matplotlib.pyplot as plt
 import glob
 from astropy.utils import NumpyRNGContext
 from astropy.stats import bootstrap
 
+def survive(Q):
+    Qstar=Q/np.mean(Q)
+    Qstar_sort=np.sort(Qstar)
+    Qn=len(Qstar)
+    Qrank=np.arange(1,Qn+1,1)
+    Q_freq_excd=(Qn+1-Qrank)/Qn
+    return Qstar_sort,Q_freq_excd
 
-def weibull_tail_fit(x,thresh):
-    # x is sorted
+def invgamma_tail_fit(x,y,thresh):
     n=len(x)
-    rank=np.arange(1,n+1,1)
-    y=(n+1-rank)/n
     ix=np.nonzero(y<thresh)[0][:1][0]
-    # ix=np.argmin(np.abs(y-thresh))
+    xtrim=x[ix:n]
+    ytrim=y[ix:n]
+    N=len(xtrim)
+    xts=np.log10(xtrim/xtrim[0])
+    yts=np.log10(ytrim/ytrim[0])
+    out=np.linalg.lstsq(xts.reshape((N,1)),yts.reshape((N,1)),rcond=None)
+    m=out[0][0][0]
+    k=-m
+    r=out[1][0]
+    res=r/N
+    return k,N,res
+
+def invgamma_fix_scale_fit(x,y):
+    bnds=[0.1,20]
+    def min_lin(X,x,y):
+        yp=invgamma.sf(x,X,loc=0,scale=X+1)
+        rmse=np.sqrt(np.sum((y-yp)**2)/len(y))
+        return rmse
+    def min_ln(X,x,y):
+        yp=invgamma.logsf(x,X,loc=0,scale=X+1)
+        rmse=np.sqrt(np.sum((np.log(y)-yp)**2)/len(y))
+        return rmse    
+    res_lin=minimize_scalar(min_lin,args=(x,y),bounds=bnds,method='bounded',
+                        options={'maxiter':500000,'xatol':1e-20})
+    res_ln=minimize_scalar(min_ln,args=(x,y),bounds=bnds,method='bounded',
+                        options={'maxiter':500000,'xatol':1e-20})
+    return res_lin.x,res_ln.x    
+    
+def weibull_tail_fit(x,y,thresh):
+    n=len(x)
+    ix=np.nonzero(y<thresh)[0][:1][0]
     xtrim=x[ix:n]
     ytrim=y[ix:n]
     N=len(xtrim)
@@ -36,14 +72,10 @@ def weibull_tail_fit(x,thresh):
     res=r/N
     return c,s,mn,N,res
 
-def weibull_tail_bootstrap(x,thresh,test_c,test_s,num_replicates,alpha):
+def weibull_tail_bootstrap(x,y,thresh,test_c,test_s,num_replicates,alpha):
     # Non-parametric bootstrap (i.e. resampling of residuals)
-    # x is sorted
     n=len(x)
-    rank=np.arange(1,n+1,1)
-    y=(n+1-rank)/n
     ix=np.nonzero(y<thresh)[0][:1][0]
-    # ix=np.argmin(np.abs(y-thresh))
     xtrim=x[ix:n]
     ytrim=y[ix:n]
     xts=np.log(xtrim)
@@ -101,15 +133,21 @@ Nta_best=np.zeros((N,1))
 thresh_best=np.zeros((N,1))
 IDs=np.zeros((N,1))
 
+k_whole=np.zeros((N,2))
+k_tail99=np.zeros((N,1))
+
 # Generate Return Flood Targets
 return_interval=2 # Years
 targ_return=(1/(return_interval*365.25))
 targ_obs=np.zeros((N,1))
 targ_best=np.zeros((N,1))
 targ_whole=np.zeros((N,1))
+targ_kwhole=np.zeros((N,2))
+targ_ktail=np.zeros((N,1))
 
 # Flag for individual plots
-plot_ind=False
+plot_ind_full=False
+plot_ind_excd=False
 
 # Flag for tail optimization method
 # 'MSS' - minimization based on mean sum of squares of linear fit on natural log transformed tail
@@ -130,13 +168,12 @@ for i in range(N):
     R=df['R'].to_numpy()
     yr=df['yr'].to_numpy()
     yrspan=np.max(yr)-np.min(yr)
-    Qstar=Q/np.mean(Q)
-    Qstar_sort=np.sort(Qstar)
+    [Qstar_sort,Q_freq_excd]=survive(Q)
     # Begin thresh loop
     for j in range(nt):    
         # Fit tail
         try:
-            [ct[i,j],st[i,j],mnt[i,j],Nt[i,j],res[i,j]]=weibull_tail_fit(Qstar_sort,thresh_array[j])
+            [ct[i,j],st[i,j],mnt[i,j],Nt[i,j],res[i,j]]=weibull_tail_fit(Qstar_sort,Q_freq_excd,thresh_array[j])
             Nta[i,j]=Nt[i,j]/yrspan
             RRt[i,j]=weibull_min.isf(targ_return,ct[i,j],loc=0,scale=st[i,j])*np.mean(R)
         except:
@@ -150,11 +187,7 @@ for i in range(N):
             Nta[i,j]=np.NAN
             RRt[i,j]=np.NAN
     # Fit whole distribution
-    [c,l,s]=weibull_min.fit(Qstar_sort,floc=0,method='MM')
-    # Calculate exceedance frequency
-    Qn=len(Qstar)
-    Qrank=np.arange(1,Qn+1,1)
-    Q_freq_excd=(Qn+1-Qrank)/Qn  
+    [c,l,s]=weibull_min.fit(Qstar_sort,floc=0,method='MM')  
     # Package output
     mnR[i,0]=np.mean(R)
     whole_fits[i,0]=c
@@ -181,17 +214,42 @@ for i in range(N):
     Nta_best[i,0]=Nt[i,ix]/yrspan
     thresh_best[i,0]=thresh_array[ix]
     # Determine boostrap confidence intervals
-    ct_best_ci[i,0],ct_best_ci[i,1],st_best_ci[i,0],st_best_ci[i,1],ct_best_std[i,0],st_best_std[i,0]=weibull_tail_bootstrap(Qstar_sort,thresh_best[i,0],ct_best[i,0],st_best[i,0],1000,0.95)
+    ct_best_ci[i,0],ct_best_ci[i,1],st_best_ci[i,0],st_best_ci[i,1],ct_best_std[i,0],st_best_std[i,0]=weibull_tail_bootstrap(Qstar_sort,Q_freq_excd,thresh_best[i,0],ct_best[i,0],st_best[i,0],1000,0.95)
     # Calculate runoff at target return interval
     targ_whole[i,0]=weibull_min.isf(targ_return,c,loc=l,scale=s)*np.mean(R)
     targ_best[i,0]=weibull_min.isf(targ_return,ct[i,ix],loc=0,scale=st[i,ix])*np.mean(R)
+    
+    ## Inverse gamma
+    k_tail99[i],_,_=invgamma_tail_fit(Qstar_sort,Q_freq_excd,0.01)
+    k_whole[i,0],k_whole[i,1]=invgamma_fix_scale_fit(Qstar_sort,Q_freq_excd)
+    targ_ktail[i]=invgamma.isf(targ_return,k_tail99[i],loc=0,scale=k_tail99[i]+1)*np.mean(R)
+    targ_kwhole[i,0]=invgamma.isf(targ_return,k_whole[i,0],loc=0,scale=k_whole[i,0]+1)*np.mean(R)
+    targ_kwhole[i,1]=invgamma.isf(targ_return,k_whole[i,1],loc=0,scale=k_whole[i,1]+1)*np.mean(R)
+    
     # Extract id
     str1=files[i]
     str2=str1.replace('GRDC_discharge/GRDC_','')
     str3=str2.replace('.csv','')
     IDs[i,0]=np.array(str3).astype(int)    
     # Start Plot
-    if plot_ind:
+    if plot_ind_excd:
+        plt.figure(i+1,figsize=(20,10))
+        plt.title('Basin '+str3+'; Mean R = '+str(np.round(np.mean(R),1))+'; R2yr = '+str(np.round(targ_obs[i,0],1)))
+        plt.scatter(Qstar_sort*np.mean(R),Q_freq_excd,label='Observations',c='gray')
+        plt.plot(Qstar_sort*np.mean(R),weibull_min.sf(Qstar_sort,c,loc=l,scale=s),label='Weibull Whole',c='k',linestyle='--')
+        plt.plot(Qstar_sort*np.mean(R),weibull_min.sf(Qstar_sort,ct[i,ix],loc=0,scale=st[i,ix]),label='Weibull MT',c='k')
+        
+        plt.plot(Qstar_sort*np.mean(R),invgamma.sf(Qstar_sort,k_tail99[i],loc=0,scale=k_tail99[i]+1),label='Inverse Gamma Tail',c='b')
+        plt.plot(Qstar_sort*np.mean(R),invgamma.sf(Qstar_sort,k_whole[i,0],loc=0,scale=k_whole[i,0]+1),label='Inverse Gamma Linear',c='r')
+        plt.plot(Qstar_sort*np.mean(R),invgamma.sf(Qstar_sort,k_whole[i,1],loc=0,scale=k_whole[i,1]+1),label='Inverse Gamma Linear',c='r',linestyle='--')        
+        
+        plt.legend(loc='best')
+        plt.yscale('log')
+        plt.xlabel('R [mm/day]')
+        plt.ylim((10**-4,1))
+        plt.xlim((0,np.max(Qstar_sort)*np.mean(R)+10))        
+    
+    if plot_ind_full:
         plt.figure(i+1,figsize=(20,10)) 
         # Mean Runoff
         plt.subplot(3,2,1)
@@ -247,7 +305,6 @@ for i in range(N):
         plt.xlabel('Q*')
         plt.ylim((10**-4,1))
         plt.xlim((10**-2,10**2))
-
         
 # Comparison Plot
 plt.figure(N+1,figsize=(10,10))
@@ -306,16 +363,22 @@ data=np.concatenate((np.take_along_axis(IDs,idx,0),
                      np.take_along_axis(thresh_best,idx,0),
                      np.take_along_axis(Nta_best,idx,0),
                      np.take_along_axis(whole_fits,idx,0),
+                     np.take_along_axis(k_tail99,idx,0),
+                     np.take_along_axis(k_whole,idx,0),
                      np.take_along_axis(mnR,idx,0),
                      np.take_along_axis(targ_obs,idx,0),
                      np.take_along_axis(targ_best,idx,0),
-                     np.take_along_axis(targ_whole,idx,0)),axis=1)
+                     np.take_along_axis(targ_whole,idx,0),
+                     np.take_along_axis(targ_ktail,idx,0),
+                     np.take_along_axis(targ_kwhole,idx,0)),axis=1)
 dfout=pd.DataFrame(data,columns=['GRDC_ID','c_best','c_lo95','c_hi95','c_std',
                                  's_best','s_lo95','s_hi95','s_std',
                                  'mn_best','thresh_best','Npera_best','c_whole',
-                                 's_whole','mn_whole','mean_R_obs',
+                                 's_whole','mn_whole','k_tail99','k_whole_lin',
+                                 'k_whole_log','mean_R_obs',
                                  'return2_R_obs','return2_R_best',
-                                 'return2_R_whole'])
+                                 'return2_R_whole','return2_R_k_tail99',
+                                 'return2_R_k_whole_lin','return2_R_k_whole_log'])
 dfout.to_csv('result_tables/GRDC_Distribution_Fits.csv',index=False)
 
 
