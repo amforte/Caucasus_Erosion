@@ -60,6 +60,16 @@ def min_k_e(X,ks,ksu,e,eu,R,c,s,ns,seed):
     rmse=np.sqrt(np.sum((e_dist-ep)**2)/ns)
     return rmse
 
+def min_tau_c(X,k_e,ks,ksu,e,eu,R,c,s,ns,seed):
+    cl=stim.set_constants(R,k_e,dist_type='weibull',tau_c=X)
+    ks_dist=np.random.normal(ks,ksu,ns)
+    e_dist=np.random.normal(e,eu,ns)
+    ep=np.zeros((ns))
+    with NumpyRNGContext(seed):
+        for i in range(ns):
+            [ep[i],_,_]=stim.stim_one(ks_dist[i],c,cl,sc=s)
+    rmse=np.sqrt(np.sum((e_dist-ep)**2)/ns)
+    return rmse
         
 def weibull_tail_fit(x,y,thresh):
     n=len(x)
@@ -163,8 +173,7 @@ plot_ind=False
 # Determine Len
 N=len(mR)
 
-
-#### Elbow Plot To Determine Optimal Clusters ####
+### Elbow Plot To Determine Optimal Clusters ####
 Xb=np.concatenate((cb.reshape(len(cb),1),mR.reshape(len(mR),1)),axis=1)
 Xw=np.concatenate((cw.reshape(len(cw),1),mR.reshape(len(mR),1)),axis=1)
 
@@ -214,7 +223,7 @@ ax2.plot(K_rng,distortionsw,'bx-')
 plt.xlabel('Number of Clusters')
 plt.ylabel('Distortion')
 
-#### Optimal Cluster Number Based on Elbow ####
+### Optimal Cluster Number Based on Elbow ###
 num_clustb=4
 num_clustw=3
 
@@ -227,7 +236,7 @@ prw=kmw.predict(XSw)
 color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
 
 
-## CLASSIFY     
+### CLASSIFY     
 eidx=np.zeros(emR.shape)
 eidx[np.logical_and(emR>3.5,emaxZ<2.75)]=0
 eidx[np.logical_and(emR<3.5,emaxZ<3.1)]=1
@@ -327,8 +336,6 @@ plt.xlabel('Longitude')
 plt.ylabel('Latitude')
 plt.gca().set_aspect('equal', adjustable='box')
 
-
-
 ## Determine population values
 # Empty Arrays
 cb_pop=np.zeros((num_clustb))
@@ -356,22 +363,34 @@ for i in range(num_clustb):
     [cmb[i],smb[i],_,_]=weibull_mt(Qsm,Qfm,mR_pop[i],1.5,1)    
 
 
-## Optimize k_e
+### Optimize k_e and tau_c
 k_e_optim=np.zeros((len(e)))
-  
+tau_c_optim=np.zeros((len(e))) 
 for i in range(len(e)):    
     args=(ksn[i],ksnu[i],e[i],eu[i],emR[i],cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],500,5)
     res=minimize_scalar(min_k_e,args=args,bounds=[1e-20,1e-6],method='bounded',
                         options={'maxiter':500000,'xatol':1e-20})
     k_e_optim[i]=res.x     
-
+    
 k_e_o=np.zeros((num_clustb))
-t_c=np.ones((4))*45
-
 for i in range(num_clustb):
     k_e_o[i]=np.median(k_e_optim[eidx==i])
+k_e_fix=np.median(k_e_optim)  
 
-k_e=np.ones((num_clustb))*np.median(k_e_optim)
+for i in range(len(e)):    
+    args=(k_e_fix,ksn[i],ksnu[i],e[i],eu[i],emR[i],cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],500,5)
+    res=minimize_scalar(min_tau_c,args=args,bounds=[10,90],method='bounded',
+                        options={'maxiter':500000,'xatol':1e-20})
+    tau_c_optim[i]=res.x
+
+tau_c_o=np.zeros((num_clustb))
+for i in range(num_clustb):
+    tau_c_o[i]=np.median(tau_c_optim[eidx==i])
+tau_c_fix=np.median(tau_c_optim)
+    
+# Fixed
+k_e=np.ones((num_clustb))*k_e_fix
+t_c=np.ones((4))*45
 
 plt.figure(5,figsize=(25,10))
 
@@ -441,20 +460,25 @@ for i in range(num_clustb):
     plt.xscale('log')
     plt.ylim((0,550))
     
-
-plt.figure(N+7,figsize=(10,10))
+plt.figure(N+7,figsize=(10,20))
+plt.subplot(2,1,1)
 for i in range(num_clustb):
     plt.scatter(emR[eidx==i],k_e_optim[eidx==i],c=color_list[i],zorder=1)
+    plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
 plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel('Optimized $k_{e}$')
 plt.yscale('log')
+
+plt.subplot(2,1,2)
+for i in range(num_clustb):
+    plt.scatter(emR[eidx==i],tau_c_optim[eidx==i],c=color_list[i],zorder=1)
+    plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
+plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
+plt.xlabel('Mean Runoff [mm/day]')
+plt.ylabel('Optimized $\tau_{c}$')
     
  
-    
-
-
-
 # plt.figure(N+4,figsize=(15,20))
 # plt.subplot(4,2,1)
 # for i in range(num_clustb):
