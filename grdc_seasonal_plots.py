@@ -11,10 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 qdf=pd.read_csv('data_tables/grdc_seasonal_values.csv')
-grdc_id=qdf['grdc_id'].to_numpy()
 mR=qdf['mean_runoff_mm_day'].to_numpy()
-k=qdf['k'].to_numpy()
-cluster=qdf['cluster_num'].to_numpy()
 ssn_frac=qdf['seasonal_frac'].to_numpy()
 anu_frac=qdf['annual_frac'].to_numpy()
 evnt_frac=qdf['event_frac'].to_numpy()
@@ -34,8 +31,40 @@ mam_rain=qdf['MAM_mean_TRMMrainfall_mm_day'].to_numpy()
 jja_rain=qdf['JJA_mean_TRMMrainfall_mm_day'].to_numpy()
 son_rain=qdf['SON_mean_TRMMrainfall_mm_day'].to_numpy()
 
+pdf=pd.read_csv('result_tables/GRDC_Distribution_Fits.csv')
+c=pdf['c_best'].to_numpy()
+s=pdf['s_best'].to_numpy()
+
+# Filter out dry basins
+idx=mR>0.3
+mR=mR[idx]
+ssn_frac=ssn_frac[idx]
+anu_frac=anu_frac[idx]
+evnt_frac=evnt_frac[idx]
+da=da[idx]
+mz=mz[idx]
+d=d[idx]
+
+djf_run=djf_run[idx]
+mam_run=mam_run[idx]
+jja_run=jja_run[idx]
+son_run=son_run[idx]
+
+djf_rain=djf_rain[idx]
+mam_rain=mam_rain[idx]
+jja_rain=jja_rain[idx]
+son_rain=son_rain[idx]
+
+c=c[idx]
+s=s[idx]
+
+df=pd.read_csv('result_tables/GRDC_Clusters.csv')
+cluster=df['Cluster'].to_numpy().astype('int')
+grdc_id=df['GRDC_ID'].to_numpy().astype('int')
+
+
 # Colors for clusters
-color_list=['maroon','dodgerblue','darkorange']
+color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
 
 ## Figure 1
 f1=plt.figure(num=1,figsize=(15,15))
@@ -44,20 +73,20 @@ ax2=plt.subplot(2,2,2)
 ax3=plt.subplot(2,2,3)
 ax4=plt.subplot(2,2,4)
 
-for i in range(3):
-    idx=cluster==i+1
-    ax1.scatter(k[idx],anu_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
-    ax2.scatter(k[idx],ssn_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
-    ax3.scatter(k[idx],evnt_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+for i in range(4):
+    idx=cluster==i
+    ax1.scatter(c[idx],anu_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax2.scatter(c[idx],ssn_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax3.scatter(c[idx],evnt_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
     ax4.scatter(mR[idx],ssn_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
 
 ax1.set_ylabel('Annual Fraction')
 ax2.set_ylabel('Seasonal Fraction')
 ax3.set_ylabel('Event Fraction')
 ax4.set_ylabel('Seasonal Fraction') 
-ax1.set_xlabel('Variability (k)')        
-ax2.set_xlabel('Variability (k)')       
-ax3.set_xlabel('Variability (k)') 
+ax1.set_xlabel('Shape')        
+ax2.set_xlabel('Shape')       
+ax3.set_xlabel('Shape') 
 ax4.set_xlabel('Mean Runoff [mm/day]')
 
 ## Figure 2
@@ -67,24 +96,70 @@ ax2=plt.subplot(2,2,2)
 ax3=plt.subplot(2,2,3)
 ax4=plt.subplot(2,2,4)
 
-for i in range(3):
-    idx=cluster==i+1
-    ax1.scatter(k[idx],djf_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
-    ax2.scatter(k[idx],mam_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
-    ax3.scatter(k[idx],jja_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
-    ax4.scatter(k[idx],son_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+for i in range(4):
+    idx=cluster==i
+    ax1.scatter(s[idx],anu_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax2.scatter(s[idx],ssn_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax3.scatter(s[idx],evnt_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax4.scatter(mR[idx],ssn_frac[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+
+ax1.set_ylabel('Annual Fraction')
+ax2.set_ylabel('Seasonal Fraction')
+ax3.set_ylabel('Event Fraction')
+ax4.set_ylabel('Seasonal Fraction') 
+ax1.set_xlabel('Scale')        
+ax2.set_xlabel('Scale')       
+ax3.set_xlabel('Scale') 
+ax4.set_xlabel('Mean Runoff [mm/day]')
+
+## Figure 3
+f3=plt.figure(num=3,figsize=(15,15))
+ax1=plt.subplot(2,2,1)
+ax2=plt.subplot(2,2,2)
+ax3=plt.subplot(2,2,3)
+ax4=plt.subplot(2,2,4)
+
+for i in range(4):
+    idx=cluster==i
+    ax1.scatter(c[idx],djf_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax2.scatter(c[idx],mam_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax3.scatter(c[idx],jja_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax4.scatter(c[idx],son_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
 
 ax1.set_ylabel('Winter Mean Runoff [mm/day]')
 ax2.set_ylabel('Spring Mean Runoff [mm/day]')
 ax3.set_ylabel('Summer Mean Runoff [mm/day]')
 ax4.set_ylabel('Fall Mean Runoff [mm/day]') 
-ax1.set_xlabel('Variability (k)')        
-ax2.set_xlabel('Variability (k)')       
-ax3.set_xlabel('Variability (k)') 
-ax4.set_xlabel('Variability (k)')
+ax1.set_xlabel('Shape')        
+ax2.set_xlabel('Shape')       
+ax3.set_xlabel('Shape') 
+ax4.set_xlabel('Shape')
 
-## Figure 3
-f3=plt.figure(num=3,figsize=(15,15))
+## Figure 4
+f4=plt.figure(num=4,figsize=(15,15))
+ax1=plt.subplot(2,2,1)
+ax2=plt.subplot(2,2,2)
+ax3=plt.subplot(2,2,3)
+ax4=plt.subplot(2,2,4)
+
+for i in range(4):
+    idx=cluster==i
+    ax1.scatter(s[idx],djf_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax2.scatter(s[idx],mam_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax3.scatter(s[idx],jja_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+    ax4.scatter(s[idx],son_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
+
+ax1.set_ylabel('Winter Mean Runoff [mm/day]')
+ax2.set_ylabel('Spring Mean Runoff [mm/day]')
+ax3.set_ylabel('Summer Mean Runoff [mm/day]')
+ax4.set_ylabel('Fall Mean Runoff [mm/day]') 
+ax1.set_xlabel('Scale')        
+ax2.set_xlabel('Scale')       
+ax3.set_xlabel('Scale') 
+ax4.set_xlabel('Scale')
+
+## Figure 5
+f5=plt.figure(num=5,figsize=(15,15))
 ax1=plt.subplot(2,2,1)
 ax2=plt.subplot(2,2,2)
 ax3=plt.subplot(2,2,3)
@@ -95,8 +170,8 @@ ax2.plot(np.array([0,12]),np.array([0,12]),c='k',linestyle=':')
 ax3.plot(np.array([0,12]),np.array([0,12]),c='k',linestyle=':')
 ax4.plot(np.array([0,12]),np.array([0,12]),c='k',linestyle=':')
 
-for i in range(3):
-    idx=cluster==i+1
+for i in range(4):
+    idx=cluster==i
     ax1.scatter(djf_rain[idx],djf_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
     ax2.scatter(mam_rain[idx],mam_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
     ax3.scatter(jja_rain[idx],jja_run[idx],s=da[idx]/10,c=color_list[i],edgecolors='k')
@@ -110,165 +185,4 @@ ax1.set_xlabel('Winter Mean Rainfall [mm/day]')
 ax2.set_xlabel('Spring Mean Rainfall [mm/day]')
 ax3.set_xlabel('Summer Mean Rainfall [mm/day]')
 ax4.set_xlabel('Fall Mean Rainfall [mm/day]') 
-
-## Figure 4
-f4=plt.figure(num=4,figsize=(15,15))
-for i in range(3):
-    idx=cluster==i+1
-    idOI=grdc_id[idx]
-    mzOI=mz[idx]
-    plt.subplot(3,1,i+1)
-    for j in range(len(idOI)):
-        fn='data_tables/grdc_daily_means/grdc_'+str(idOI[j])+'_mean_daily.csv'
-        bdf=pd.read_csv(fn)
-        dn=bdf['day_number'].to_numpy()
-        mnR=bdf['grdc_smoothed_mean_daily_runoff_mm_day'].to_numpy()
-        if mzOI[j]<2700:
-            plt.plot(dn,mnR,c=color_list[i],linewidth=1,linestyle=':')
-        else:
-            plt.plot(dn,mnR,c=color_list[i],linewidth=2)
-    plt.xlabel('Day in Year')
-    plt.ylabel('Smoothed Daily Mean Runoff [mm]')
-    plt.xlim((0,365))
-    plt.ylim((0,18))
-
-## Figure 5
-f5=plt.figure(num=5,figsize=(20,10))
-for i in range(3):
-    idx=cluster==i+1
-    idOI=grdc_id[idx]
-    mzOI=mz[idx]
-    plt.subplot(2,3,i+1)
-    for j in range(len(idOI)):
-        fn='data_tables/grdc_daily_means/grdc_'+str(idOI[j])+'_mean_daily.csv'
-        bdf=pd.read_csv(fn)
-        dn=bdf['day_number'].to_numpy()
-        mnP=bdf['trmm_smoothed_mean_daily_rainfall_mm_day'].to_numpy()
-        if mzOI[j]<2700:
-            plt.plot(dn,mnP,c=color_list[i],linewidth=1,linestyle=':')
-        else:
-            plt.plot(dn,mnP,c=color_list[i],linewidth=2)
-    plt.xlabel('Day in Year')
-    plt.ylabel('Smoothed Daily Mean Rainfall [mm]')
-    plt.xlim((0,365))
-    plt.ylim((0,8))
-    plt.subplot(2,3,4+i)
-    for j in range(len(idOI)):
-        fn='data_tables/grdc_daily_means/grdc_'+str(idOI[j])+'_mean_daily.csv'
-        bdf=pd.read_csv(fn)
-        dn=bdf['day_number'].to_numpy()
-        mnR=bdf['grdc_smoothed_mean_daily_runoff_mm_day'].to_numpy()
-        if mzOI[j]<2700:
-            plt.plot(dn,mnR,c=color_list[i],linewidth=1,linestyle=':')
-        else:
-            plt.plot(dn,mnR,c=color_list[i],linewidth=2)
-    plt.xlabel('Day in Year')
-    plt.ylabel('Smoothed Daily Mean Runoff [mm]')
-    plt.xlim((0,365))
-    plt.ylim((0,18))    
-    
-    
-## Figure 6
-f6=plt.figure(num=6,figsize=(15,15))
-for i in range(3):
-    idx=cluster==i+1
-    idOI=grdc_id[idx]
-    mzOI=mz[idx]
-    plt.subplot(3,1,i+1)
-    plt.plot(np.array([0,365]),np.array([0,0]),c='k',linestyle=':',linewidth=0.5,zorder=0)
-    for j in range(len(idOI)):
-        fn='data_tables/grdc_daily_means/grdc_'+str(idOI[j])+'_mean_daily.csv'
-        bdf=pd.read_csv(fn)
-        dn=bdf['day_number'].to_numpy()
-        mnP=bdf['trmm_smoothed_mean_daily_rainfall_mm_day'].to_numpy()
-        mnR=bdf['grdc_smoothed_mean_daily_runoff_mm_day'].to_numpy()
-        if mzOI[j]<2700:
-            plt.plot(dn,mnP-mnR,c=color_list[i],linewidth=1,linestyle=':')
-        else:
-            plt.plot(dn,mnP-mnR,c=color_list[i],linewidth=2)
-    plt.xlabel('Day in Year')
-    plt.ylabel('Rainfall - Runoff')
-    plt.xlim((0,365))
-    plt.ylim((-12,5))  
-    
-## Figure 7
-f7=plt.figure(num=7,figsize=(20,15))
-for i in range(3):
-    idx=cluster==i+1
-    idOI=grdc_id[idx]
-    mzOI=mz[idx]
-    dOI=d[idx]
-    plt.subplot(3,3,i+1)
-    for j in range(len(idOI)):
-        fn='data_tables/grdc_daily_means/grdc_'+str(idOI[j])+'_mean_daily.csv'
-        bdf=pd.read_csv(fn)
-        dn=bdf['day_number'].to_numpy()
-        mnP=bdf['trmm_smoothed_mean_daily_rainfall_mm_day'].to_numpy()
-        if np.logical_and(mzOI[j]<2700,dOI[j]<100):
-            plt.plot(dn,mnP,c=color_list[i],linewidth=0.5)
-        elif np.logical_and(mzOI[j]<2700,dOI[j]>100):
-            plt.plot(dn,mnP,c=color_list[i],linewidth=0.5,linestyle='--')
-        elif np.logical_and(mzOI[j]>=2700,dOI[j]<100):
-            plt.plot(dn,mnP,c=color_list[i],linewidth=2)
-        elif np.logical_and(mzOI[j]>=2700,dOI[j]>100):
-            plt.plot(dn,mnP,c=color_list[i],linewidth=2,linestyle='--')
-    plt.xlabel('Day in Year')
-    plt.ylabel('Smoothed Daily Mean Rainfall [mm]')
-    plt.xlim((0,365))
-    plt.ylim((0,8))
-    plt.title('Cluster '+str(i+1))
-    ax=plt.gca()
-    ax.axvline(59,c='k',linewidth=0.5,linestyle='--')
-    ax.axvline(151,c='k',linewidth=0.5,linestyle='--')
-    ax.axvline(243,c='k',linewidth=0.5,linestyle='--')
-    ax.axvline(334,c='k',linewidth=0.5,linestyle='--')    
-    
-    plt.subplot(3,3,4+i)
-    for j in range(len(idOI)):
-        fn='data_tables/grdc_daily_means/grdc_'+str(idOI[j])+'_mean_daily.csv'
-        bdf=pd.read_csv(fn)
-        dn=bdf['day_number'].to_numpy()
-        mnR=bdf['grdc_smoothed_mean_daily_runoff_mm_day'].to_numpy()
-        if np.logical_and(mzOI[j]<2700,dOI[j]<100):
-            plt.plot(dn,mnR,c=color_list[i],linewidth=0.5)
-        elif np.logical_and(mzOI[j]<2700,dOI[j]>100):
-            plt.plot(dn,mnR,c=color_list[i],linewidth=0.5,linestyle='--')
-        elif np.logical_and(mzOI[j]>=2700,dOI[j]<100):
-            plt.plot(dn,mnR,c=color_list[i],linewidth=2)
-        elif np.logical_and(mzOI[j]>=2700,dOI[j]>100):
-            plt.plot(dn,mnR,c=color_list[i],linewidth=2,linestyle='--')
-    plt.xlabel('Day in Year')
-    plt.ylabel('Smoothed Daily Mean Runoff [mm]')
-    plt.xlim((0,365))
-    plt.ylim((0,18))
-    ax=plt.gca()
-    ax.axvline(59,c='k',linewidth=0.5,linestyle='--')
-    ax.axvline(151,c='k',linewidth=0.5,linestyle='--')
-    ax.axvline(243,c='k',linewidth=0.5,linestyle='--')
-    ax.axvline(334,c='k',linewidth=0.5,linestyle='--')
-    
-    plt.subplot(3,3,i+7)
-    plt.plot(np.array([0,365]),np.array([0,0]),c='k',linestyle=':',linewidth=0.5,zorder=0)
-    for j in range(len(idOI)):
-        fn='data_tables/grdc_daily_means/grdc_'+str(idOI[j])+'_mean_daily.csv'
-        bdf=pd.read_csv(fn)
-        dn=bdf['day_number'].to_numpy()
-        mnP=bdf['trmm_smoothed_mean_daily_rainfall_mm_day'].to_numpy()
-        mnR=bdf['grdc_smoothed_mean_daily_runoff_mm_day'].to_numpy()
-        if np.logical_and(mzOI[j]<2700,dOI[j]<100):
-            plt.plot(dn,mnP-mnR,c=color_list[i],linewidth=0.5)
-        elif np.logical_and(mzOI[j]<2700,dOI[j]>100):
-            plt.plot(dn,mnP-mnR,c=color_list[i],linewidth=0.5,linestyle='--')
-        elif np.logical_and(mzOI[j]>=2700,dOI[j]<100):
-            plt.plot(dn,mnP-mnR,c=color_list[i],linewidth=2)
-        elif np.logical_and(mzOI[j]>=2700,dOI[j]>100):
-            plt.plot(dn,mnP-mnR,c=color_list[i],linewidth=2,linestyle='--')
-    plt.xlabel('Day in Year')
-    plt.ylabel('Rainfall - Runoff')
-    plt.xlim((0,365))
-    plt.ylim((-12,5))
-    ax=plt.gca()
-    ax.axvline(59,c='k',linewidth=0.5,linestyle='--')
-    ax.axvline(151,c='k',linewidth=0.5,linestyle='--')
-    ax.axvline(243,c='k',linewidth=0.5,linestyle='--')
-    ax.axvline(334,c='k',linewidth=0.5,linestyle='--')    
+   

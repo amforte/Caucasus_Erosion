@@ -229,12 +229,15 @@ num_clustw=3
 
 kmb=KMeans(n_clusters=num_clustb,max_iter=5000,random_state=seed).fit(XSb)
 kmw=KMeans(n_clusters=num_clustw,max_iter=5000,random_state=seed).fit(XSw)
-prb=kmb.predict(XSb)
-prw=kmw.predict(XSw)
+
+cluster_labels=kmb.labels_
+data=np.concatenate((ID.reshape((len(ID),1)),cluster_labels.reshape(len(ID),1)),axis=1)
+clustdf=pd.DataFrame(data,columns=['GRDC_ID','Cluster'])
+clustdf.to_csv('result_tables/GRDC_Clusters.csv',index=False)
+
 
 ### Start Plotting   
 color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
-
 
 ### CLASSIFY     
 eidx=np.zeros(emR.shape)
