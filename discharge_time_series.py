@@ -10,9 +10,9 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-df=pd.read_csv('result_tables/GRDC_Clusters.csv')
-cluster=df['Cluster'].to_numpy().astype('int')
-grdc_id=df['GRDC_ID'].to_numpy().astype('int')
+df=pd.read_csv('result_tables/grdc_basin_clusters.csv')
+cluster=df['cluster'].to_numpy().astype('int')
+grdc_id=df['grdc_id'].to_numpy().astype('int')
 
 qdf=pd.read_csv('data_tables/grdc_summary_values.csv')
 mR=qdf['mean_runoff_mm_day'].to_numpy()

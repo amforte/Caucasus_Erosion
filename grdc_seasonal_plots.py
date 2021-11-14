@@ -35,9 +35,9 @@ pdf=pd.read_csv('result_tables/GRDC_Distribution_Fits.csv')
 c=pdf['c_best'].to_numpy()
 s=pdf['s_best'].to_numpy()
 
-df=pd.read_csv('result_tables/GRDC_Clusters.csv')
-cluster=df['Cluster'].to_numpy().astype('int')
-grdc_id=df['GRDC_ID'].to_numpy().astype('int')
+df=pd.read_csv('result_tables/grdc_basin_clusters.csv')
+cluster=df['cluster'].to_numpy().astype('int')
+grdc_id=df['grdc_id'].to_numpy().astype('int')
 
 
 # Colors for clusters

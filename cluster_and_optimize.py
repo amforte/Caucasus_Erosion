@@ -136,7 +136,6 @@ mnZ=gdf['mnz'].to_numpy()/1000
 rZ=maxZ-minZ
 ID=gdf['ID'].to_numpy()
 
-
 # Load in Data from Erosion Rate basins
 edf=pd.read_csv('data_tables/gc_ero_master_table.csv')
 ecenters=pd.read_csv('data_tables/grdc_outlines/Ebsns.csv')
@@ -192,47 +191,25 @@ ax2.plot(K_rng,distortionsb,'bx-')
 plt.xlabel('Number of Clusters')
 plt.ylabel('Distortion')
 
-# inertiasw=[]
-# distortionsw=[]
-# K_rng=range(1,15)
-# for i in K_rng:
-#     kmw=KMeans(n_clusters=i,max_iter=5000,random_state=seed).fit(XSw)
-#     inertiasw.append(kmw.inertia_)
-#     distortionsw.append(sum(np.min(cdist(XSw,kmw.cluster_centers_,'euclidean'),axis=1))
-#                         / XSw.shape[0])
-# plt.figure(num=2,figsize=(7,4))
-# ax1=plt.subplot(2,1,1)
-# ax1.plot(K_rng,inertiasw,'bx-')    
-# plt.xlabel('Number of Clusters')
-# plt.ylabel('Intertia')
-# ax2=plt.subplot(2,1,2)
-# ax2.plot(K_rng,distortionsw,'bx-')
-# plt.xlabel('Number of Clusters')
-# plt.ylabel('Distortion')
-
 ### Optimal Cluster Number Based on Elbow ###
 num_clustb=4
-num_clustw=3
 
 kmb=KMeans(n_clusters=num_clustb,max_iter=5000,random_state=seed).fit(XSb)
-# kmw=KMeans(n_clusters=num_clustw,max_iter=5000,random_state=seed).fit(XSw)
 
 cluster_labels=kmb.labels_
 data=np.concatenate((ID.reshape((len(ID),1)),cluster_labels.reshape(len(ID),1)),axis=1)
-clustdf=pd.DataFrame(data,columns=['GRDC_ID','Cluster'])
-clustdf.to_csv('result_tables/GRDC_Clusters.csv',index=False)
-
+clustdf=pd.DataFrame(data,columns=['grdc_id','cluster'])
+clustdf.to_csv('result_tables/grdc_basin_clusters.csv',index=False)
 
 ### Start Plotting   
 color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
 
-### CLASSIFY     
+### Manually Classify    
 eidx=np.ones(emR.shape)*4
 eidx[np.logical_and(emR>3.5,emaxZ<2.75)]=0
 eidx[np.logical_and(emR>3.5,emaxZ>=2.75)]=3 
 eidx[np.logical_and(emR<3.5,emaxZ<3.1)]=1
 eidx[np.logical_and(emR<3.5,emaxZ>=3.1)]=2
-
 
 # eidx=np.ones(emR.shape)*4
 # eidx[np.logical_and(emR>3.5,emaxZ<2.5)]=0
@@ -246,12 +223,11 @@ eidx[np.logical_and(emR<3.5,emaxZ>=3.1)]=2
 # eidx[np.logical_and(emR<3.5,erZ<2.4)]=1
 # eidx[np.logical_and(emR<3.5,erZ>=2.4)]=2
 
-plt.figure(3,figsize=(25,20))
+plt.figure(num=2,figsize=(25,20))
 plt.subplot(2,2,1)
 for i in range(num_clustb):
     plt.scatter(mSN[kmb.labels_==i],maxZ[kmb.labels_==i],c=color_list[i])
     plt.scatter(emSN[eidx==i],emaxZ[eidx==i],c=color_list[i],zorder=0,marker='s',s=20,alpha=0.5)
-   
 plt.scatter(emSN[eidx==4],emaxZ[eidx==4],s=10,c='gray',zorder=2,marker='s',alpha=0.5)
 plt.xlabel('Snow STD')
 plt.ylabel('Max Elevation [km]')
@@ -267,7 +243,6 @@ plt.subplot(2,2,3)
 for i in range(num_clustb):
     plt.scatter(mR[kmb.labels_==i],maxZ[kmb.labels_==i],c=color_list[i])
     plt.scatter(emR[eidx==i],emaxZ[eidx==i],c=color_list[i],zorder=0,marker='s',s=20,alpha=0.5)
-   
 plt.scatter(emR[eidx==4],emaxZ[eidx==4],s=10,c='gray',zorder=2,marker='s',alpha=0.5)
 plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel('Max Elevation [km]')
@@ -288,7 +263,7 @@ plt.gca().set_aspect('equal', adjustable='box')
 
 
 ## 
-plt.figure(4,figsize=(25,20))
+plt.figure(num=3,figsize=(25,20))
 plt.subplot(2,2,1)
 for i in range(num_clustb):
     plt.scatter(cb[kmb.labels_==i],mR[kmb.labels_==i],c=color_list[i])
@@ -305,8 +280,6 @@ plt.subplot(2,2,3)
 for i in range(num_clustb):
     plt.scatter(mR[kmb.labels_==i],maxZ[kmb.labels_==i],c=color_list[i])
     plt.scatter(emR[eidx==i],emaxZ[eidx==i],c=color_list[i],zorder=0,marker='s',s=20,alpha=0.5)
-   
-# plt.scatter(emR,emaxZ,c='gray',zorder=0,marker='s',s=20,alpha=0.5)
 plt.scatter(emR[eidx==4],emaxZ[eidx==4],s=10,c='gray',zorder=2,marker='s',alpha=0.5)
 plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel('Max Elevation [km]')
@@ -327,6 +300,7 @@ plt.gca().set_aspect('equal', adjustable='box')
 
 ## Determine population values
 # Empty Arrays
+clust_num=np.zeros((num_clustb))
 cb_pop=np.zeros((num_clustb))
 sb_pop=np.zeros((num_clustb))
 mR_pop=np.zeros((num_clustb))
@@ -335,6 +309,7 @@ smb=np.zeros((num_clustb))
 
 for i in range(num_clustb):
     idx=kmb.labels_==i
+    clust_num[i]=i
     cb_pop[i]=np.mean(cb[idx])
     sb_pop[i]=np.mean(sb[idx])
     mR_pop[i]=np.mean(mR[idx])
@@ -349,9 +324,8 @@ for i in range(num_clustb):
     Qsaccum=np.concatenate(ListQs,axis=0)
     Qfaccum=np.concatenate(ListQf,axis=0)
     [Qsm,Qfm,QsQ1,QsQ3,QfQ1,QfQ3]=bin_Q(Qsaccum,Qfaccum)
-    [cmb[i],smb[i],_,_]=weibull_mt(Qsm,Qfm,mR_pop[i],1.5,1)    
-
-
+    [cmb[i],smb[i],_,_]=weibull_mt(Qsm,Qfm,mR_pop[i],1.5,1) 
+    
 ### Optimize k_e and tau_c
 k_e_optim=np.zeros((len(e)))
 tau_c_optim=np.zeros((len(e))) 
@@ -376,12 +350,24 @@ tau_c_o=np.zeros((num_clustb))
 for i in range(num_clustb):
     tau_c_o[i]=np.median(tau_c_optim[eidx==i])
 tau_c_fix=np.median(tau_c_optim)
+
+### Output 
+clustmdata=np.concatenate((clust_num.reshape((len(clust_num),1)),
+                     cb_pop.reshape((len(cb_pop),1)),
+                     sb_pop.reshape((len(sb_pop),1)),
+                     mR_pop.reshape((len(mR_pop),1)),
+                     cmb.reshape((len(cmb),1)),
+                     smb.reshape((len(smb),1)),
+                     k_e_o.reshape((len(k_e_o),1)),
+                     tau_c_o.reshape((len(tau_c_o),1))),axis=1)
+clustmdf=pd.DataFrame(clustmdata,columns=['cluster','c_mean','s_mean','r_mean','c_aggr','s_aggr','k_e','tau_c'])
+clustmdf.to_csv('result_tables/grdc_mean_clusters.csv',index=False)
     
 # Fixed
-k_e=np.ones((num_clustb))*k_e_fix
+k_e=np.ones((4))*k_e_fix
 t_c=np.ones((4))*tau_c_fix
 
-plt.figure(5,figsize=(25,10))
+plt.figure(num=4,figsize=(25,10))
 
 for i in range(num_clustb):
     idx=kmb.labels_==i
