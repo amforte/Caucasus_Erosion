@@ -43,31 +43,12 @@ R2klog=df['return2_R_k_whole_log'].to_numpy()
 # General info
 mR=df['mean_R_obs'].to_numpy()
 R2o=df['return2_R_obs'].to_numpy()
-ID=df['GRDC_ID'].to_numpy()
-
-# Filter out the two super low runoff basins
-idx=mR>0.3
-cb=cb[idx]
-sb=sb[idx]
-cw=cw[idx]
-sw=sw[idx]
-k99=k99[idx]
-klog=klog[idx]
-klin=klin[idx]
-R2b=R2b[idx]
-R2w=R2w[idx]
-R2k99=R2k99[idx]
-R2klin=R2klin[idx]
-R2klog=R2klog[idx]
-mR=mR[idx]
-R2o=R2o[idx]
-ID=ID[idx].astype(int)
+ID=df['GRDC_ID'].to_numpy().astype(int)
 
 plot_ind=True
 
 # Determine Len
 N=len(mR)
-
 
 k_e=1e-11
 
@@ -103,7 +84,7 @@ for i in range(N):
         plt.xlim((0,8000))
         plt.legend(loc='best')
         
-        df=pd.read_csv('GRDC_discharge/GRDC_'+str(ID[i])+'.csv')
+        df=pd.read_csv('data_tables/grdc_discharge_time_series/GRDC_'+str(ID[i])+'.csv')
         Q=df['Q'].to_numpy()
         [Qs,Qf]=survive(Q)
         plt.subplot(1,2,2)

@@ -10,13 +10,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-qdf=pd.read_csv('data_tables/grdc_seasonal_values.csv')
+qdf=pd.read_csv('data_tables/grdc_summary_values.csv')
 mR=qdf['mean_runoff_mm_day'].to_numpy()
 ssn_frac=qdf['seasonal_frac'].to_numpy()
 anu_frac=qdf['annual_frac'].to_numpy()
 evnt_frac=qdf['event_frac'].to_numpy()
-da=qdf['drain_area_km2'].to_numpy()
-mz=qdf['maxz_m'].to_numpy()
+da=qdf['DA_km2'].to_numpy()
+mz=qdf['maxz'].to_numpy()
 do=qdf['dist_from_sw_km'].to_numpy()
 d=np.copy(do)
 d[np.isnan(d)]=150
@@ -26,37 +26,14 @@ mam_run=qdf['MAM_mean_runoff_mm_day'].to_numpy()
 jja_run=qdf['JJA_mean_runoff_mm_day'].to_numpy()
 son_run=qdf['SON_mean_runoff_mm_day'].to_numpy()
 
-djf_rain=qdf['DJF_mean_TRMMrainfall_mm_day'].to_numpy()
-mam_rain=qdf['MAM_mean_TRMMrainfall_mm_day'].to_numpy()
-jja_rain=qdf['JJA_mean_TRMMrainfall_mm_day'].to_numpy()
-son_rain=qdf['SON_mean_TRMMrainfall_mm_day'].to_numpy()
+djf_rain=qdf['mnTRMM_djf_mm_day'].to_numpy()
+mam_rain=qdf['mnTRMM_mam_mm_day'].to_numpy()
+jja_rain=qdf['mnTRMM_jja_mm_day'].to_numpy()
+son_rain=qdf['mnTRMM_son_mm_day'].to_numpy()
 
 pdf=pd.read_csv('result_tables/GRDC_Distribution_Fits.csv')
 c=pdf['c_best'].to_numpy()
 s=pdf['s_best'].to_numpy()
-
-# Filter out dry basins
-idx=mR>0.3
-mR=mR[idx]
-ssn_frac=ssn_frac[idx]
-anu_frac=anu_frac[idx]
-evnt_frac=evnt_frac[idx]
-da=da[idx]
-mz=mz[idx]
-d=d[idx]
-
-djf_run=djf_run[idx]
-mam_run=mam_run[idx]
-jja_run=jja_run[idx]
-son_run=son_run[idx]
-
-djf_rain=djf_rain[idx]
-mam_rain=mam_rain[idx]
-jja_rain=jja_rain[idx]
-son_rain=son_rain[idx]
-
-c=c[idx]
-s=s[idx]
 
 df=pd.read_csv('result_tables/GRDC_Clusters.csv')
 cluster=df['Cluster'].to_numpy().astype('int')

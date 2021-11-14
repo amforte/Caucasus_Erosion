@@ -105,7 +105,7 @@ def weibull_tail_bootstrap(x,y,thresh,test_c,test_s,num_replicates,alpha):
     return c_l,c_u,s_l,s_u,c_std,s_std   
 
 # Build File List    
-files=glob.glob('GRDC_discharge/*.csv') 
+files=glob.glob('data_tables/grdc_discharge_time_series/*.csv') 
 # Define threshold array
 thresh_array=np.linspace(0.01,0.6,50)
 nt=len(thresh_array) 
@@ -228,7 +228,7 @@ for i in range(N):
     
     # Extract id
     str1=files[i]
-    str2=str1.replace('GRDC_discharge/GRDC_','')
+    str2=str1.replace('data_tables/grdc_discharge_time_series/GRDC_','')
     str3=str2.replace('.csv','')
     IDs[i,0]=np.array(str3).astype(int)    
     # Start Plot

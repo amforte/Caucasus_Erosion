@@ -123,39 +123,25 @@ def weibull_mt(Qs,Qf,mnR,mean_weight,tail_weight):
     
 # Load in data from GRDC basins
 df=pd.read_csv('result_tables/GRDC_Distribution_Fits.csv')
+mR=df['mean_R_obs'].to_numpy()
 gdf=pd.read_csv('data_tables/grdc_summary_values.csv')
-g_topo_df=pd.read_csv('data_tables/grdc_topo_climate.csv')
 cb=df['c_best'].to_numpy()
 sb=df['s_best'].to_numpy()
 cw=df['c_whole'].to_numpy()
 sw=df['s_whole'].to_numpy()
-k99=gdf['k_99'].to_numpy()
-mR=gdf['R_mm_dy'].to_numpy()
-mSN=gdf['Snow_std'].to_numpy()
-maxZ=g_topo_df['maxz'].to_numpy()/1000
-minZ=g_topo_df['minz'].to_numpy()/1000
-mnZ=g_topo_df['mnz'].to_numpy()/1000
+mSN=gdf['ssnstd'].to_numpy()
+maxZ=gdf['maxz'].to_numpy()/1000
+minZ=gdf['minz'].to_numpy()/1000
+mnZ=gdf['mnz'].to_numpy()/1000
 rZ=maxZ-minZ
 ID=gdf['ID'].to_numpy()
 
-# Filter out the two super low runoff basins
-idx=mR>0.3
-cb=cb[idx]
-sb=sb[idx]
-cw=cw[idx]
-sw=sw[idx]
-k99=k99[idx]
-mR=mR[idx]
-maxZ=maxZ[idx]
-minZ=minZ[idx]
-mnZ=mnZ[idx]
-rZ=rZ[idx]
-ID=ID[idx]
-mSN=mSN[idx]
 
 # Load in Data from Erosion Rate basins
 edf=pd.read_csv('data_tables/gc_ero_master_table.csv')
-ecenters=pd.read_csv('temp_GRDC_outlines/Ebsns.csv')
+ecenters=pd.read_csv('data_tables/grdc_outlines/Ebsns.csv')
+erun=pd.read_csv('result_tables/estimate_runoff_power.csv')
+
 ksn=edf['mean_ksn'].to_numpy()
 e=edf['St_E_rate_m_Myr'].to_numpy()
 eu=edf['St_Ext_Unc'].to_numpy()
@@ -163,8 +149,8 @@ ksnu=edf['se_ksn'].to_numpy()
 emaxZ=edf['max_el'].to_numpy()/1000
 eminZ=edf['outlet_elevation'].to_numpy()/1000
 erZ=emaxZ-eminZ
-emR=edf['mean_runoff'].to_numpy()
 emSN=edf['mean_SNOWstd'].to_numpy()
+emR=erun['mean_runoff'].to_numpy()
 ex=ecenters['lon'].to_numpy()
 ey=ecenters['lat'].to_numpy()
 
@@ -186,6 +172,7 @@ XSw=scalerw.transform(Xw)
 
 # Set random seed for reproducibility
 seed=5
+num_iterations=500
 
 inertiasb=[]
 distortionsb=[]
@@ -205,30 +192,30 @@ ax2.plot(K_rng,distortionsb,'bx-')
 plt.xlabel('Number of Clusters')
 plt.ylabel('Distortion')
 
-inertiasw=[]
-distortionsw=[]
-K_rng=range(1,15)
-for i in K_rng:
-    kmw=KMeans(n_clusters=i,max_iter=5000,random_state=seed).fit(XSw)
-    inertiasw.append(kmw.inertia_)
-    distortionsw.append(sum(np.min(cdist(XSw,kmw.cluster_centers_,'euclidean'),axis=1))
-                        / XSw.shape[0])
-plt.figure(num=2,figsize=(7,4))
-ax1=plt.subplot(2,1,1)
-ax1.plot(K_rng,inertiasw,'bx-')    
-plt.xlabel('Number of Clusters')
-plt.ylabel('Intertia')
-ax2=plt.subplot(2,1,2)
-ax2.plot(K_rng,distortionsw,'bx-')
-plt.xlabel('Number of Clusters')
-plt.ylabel('Distortion')
+# inertiasw=[]
+# distortionsw=[]
+# K_rng=range(1,15)
+# for i in K_rng:
+#     kmw=KMeans(n_clusters=i,max_iter=5000,random_state=seed).fit(XSw)
+#     inertiasw.append(kmw.inertia_)
+#     distortionsw.append(sum(np.min(cdist(XSw,kmw.cluster_centers_,'euclidean'),axis=1))
+#                         / XSw.shape[0])
+# plt.figure(num=2,figsize=(7,4))
+# ax1=plt.subplot(2,1,1)
+# ax1.plot(K_rng,inertiasw,'bx-')    
+# plt.xlabel('Number of Clusters')
+# plt.ylabel('Intertia')
+# ax2=plt.subplot(2,1,2)
+# ax2.plot(K_rng,distortionsw,'bx-')
+# plt.xlabel('Number of Clusters')
+# plt.ylabel('Distortion')
 
 ### Optimal Cluster Number Based on Elbow ###
 num_clustb=4
 num_clustw=3
 
 kmb=KMeans(n_clusters=num_clustb,max_iter=5000,random_state=seed).fit(XSb)
-kmw=KMeans(n_clusters=num_clustw,max_iter=5000,random_state=seed).fit(XSw)
+# kmw=KMeans(n_clusters=num_clustw,max_iter=5000,random_state=seed).fit(XSw)
 
 cluster_labels=kmb.labels_
 data=np.concatenate((ID.reshape((len(ID),1)),cluster_labels.reshape(len(ID),1)),axis=1)
@@ -240,11 +227,12 @@ clustdf.to_csv('result_tables/GRDC_Clusters.csv',index=False)
 color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
 
 ### CLASSIFY     
-eidx=np.zeros(emR.shape)
+eidx=np.ones(emR.shape)*4
 eidx[np.logical_and(emR>3.5,emaxZ<2.75)]=0
+eidx[np.logical_and(emR>3.5,emaxZ>=2.75)]=3 
 eidx[np.logical_and(emR<3.5,emaxZ<3.1)]=1
 eidx[np.logical_and(emR<3.5,emaxZ>=3.1)]=2
-eidx[np.logical_and(emR>3.5,emaxZ>=2.75)]=3 
+
 
 # eidx=np.ones(emR.shape)*4
 # eidx[np.logical_and(emR>3.5,emaxZ<2.5)]=0
@@ -270,11 +258,9 @@ plt.ylabel('Max Elevation [km]')
 
 plt.subplot(2,2,2)
 for i in range(num_clustb):
-    plt.scatter(rZ[kmb.labels_==i],maxZ[kmb.labels_==i],c=color_list[i])
-    plt.scatter(erZ[eidx==i],emaxZ[eidx==i],c=color_list[i],zorder=0,marker='s',s=20,alpha=0.5)
+    plt.scatter(cb[kmb.labels_==i],maxZ[kmb.labels_==i],c=color_list[i])
    
-plt.scatter(erZ[eidx==4],emaxZ[eidx==4],s=10,c='gray',zorder=2,marker='s',alpha=0.5)
-plt.xlabel('Elevation Range [km]')
+plt.xlabel('Shape')
 plt.ylabel('Max Elevation [km]')
 
 plt.subplot(2,2,3)
@@ -288,7 +274,7 @@ plt.ylabel('Max Elevation [km]')
 
 plt.subplot(2,2,4)
 for i in range(N):
-    lldf=pd.read_csv('temp_GRDC_outlines/Bsn_'+str(ID[i])+'.csv')
+    lldf=pd.read_csv('data_tables/grdc_outlines/Bsn_'+str(ID[i])+'.csv')
     lab=kmb.labels_[i]
     for j in range(num_clustb):
         if lab==j:
@@ -327,7 +313,7 @@ plt.ylabel('Max Elevation [km]')
 
 plt.subplot(2,2,4)
 for i in range(N):
-    lldf=pd.read_csv('temp_GRDC_outlines/Bsn_'+str(ID[i])+'.csv')
+    lldf=pd.read_csv('data_tables/grdc_outlines/Bsn_'+str(ID[i])+'.csv')
     lab=kmb.labels_[i]
     for j in range(num_clustb):
         if lab==j:
@@ -355,7 +341,7 @@ for i in range(num_clustb):
     ListQs=[]
     ListQf=[]
     for j in range(len(mR[idx])):
-        df=pd.read_csv('GRDC_discharge/GRDC_'+str(ID[idx][j])+'.csv')
+        df=pd.read_csv('data_tables/grdc_discharge_time_series/GRDC_'+str(ID[idx][j])+'.csv')
         Q=df['Q'].to_numpy()
         [Qs,Qf]=survive(Q)
         ListQs.append(Qs)
@@ -370,7 +356,7 @@ for i in range(num_clustb):
 k_e_optim=np.zeros((len(e)))
 tau_c_optim=np.zeros((len(e))) 
 for i in range(len(e)):    
-    args=(ksn[i],ksnu[i],e[i],eu[i],emR[i],cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],500,5)
+    args=(ksn[i],ksnu[i],e[i],eu[i],emR[i],cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],num_iterations,5)
     res=minimize_scalar(min_k_e,args=args,bounds=[1e-20,1e-6],method='bounded',
                         options={'maxiter':500000,'xatol':1e-20})
     k_e_optim[i]=res.x     
@@ -381,7 +367,7 @@ for i in range(num_clustb):
 k_e_fix=np.median(k_e_optim)  
 
 for i in range(len(e)):    
-    args=(k_e_fix,ksn[i],ksnu[i],e[i],eu[i],emR[i],cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],500,5)
+    args=(k_e_fix,ksn[i],ksnu[i],e[i],eu[i],emR[i],cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],num_iterations,5)
     res=minimize_scalar(min_tau_c,args=args,bounds=[10,90],method='bounded',
                         options={'maxiter':500000,'xatol':1e-20})
     tau_c_optim[i]=res.x
@@ -408,7 +394,7 @@ for i in range(num_clustb):
     ListQs=[]
     ListQf=[]
     for j in range(len(mR[idx])):
-        df=pd.read_csv('GRDC_discharge/GRDC_'+str(ID[idx][j])+'.csv')
+        df=pd.read_csv('data_tables/grdc_discharge_time_series/GRDC_'+str(ID[idx][j])+'.csv')
         Q=df['Q'].to_numpy()
         [Qs,Qf]=survive(Q)
         plt.scatter(Qs*mR[idx][j],Qf,s=5,c='gray',alpha=0.5,zorder=0)
@@ -463,8 +449,8 @@ for i in range(num_clustb):
     plt.xscale('log')
     plt.ylim((0,550))
     
-plt.figure(N+7,figsize=(10,20))
-plt.subplot(2,1,1)
+plt.figure(N+7,figsize=(20,20))
+plt.subplot(2,2,1)
 for i in range(num_clustb):
     plt.scatter(emR[eidx==i],k_e_optim[eidx==i],c=color_list[i],zorder=1)
     plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
@@ -473,10 +459,31 @@ plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel('Optimized $k_{e}$')
 plt.yscale('log')
 
-plt.subplot(2,1,2)
+plt.subplot(2,2,2)
+for i in range(num_clustb):
+    plt.scatter(emaxZ[eidx==i],k_e_optim[eidx==i],c=color_list[i],zorder=1)
+    plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
+plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
+plt.xlabel('Max Elevation [km]')
+plt.ylabel('Optimized $k_{e}$')
+plt.yscale('log')
+
+plt.subplot(2,2,3)
 for i in range(num_clustb):
     plt.scatter(emR[eidx==i],tau_c_optim[eidx==i],c=color_list[i],zorder=1)
     plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
 plt.xlabel('Mean Runoff [mm/day]')
-plt.ylabel('Optimized $\tau_{c}$')  
+plt.ylabel(r'Optimized $\tau_c$')
+
+plt.subplot(2,2,4)
+for i in range(num_clustb):
+    plt.scatter(emaxZ[eidx==i],tau_c_optim[eidx==i],c=color_list[i],zorder=1)
+    plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
+plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
+plt.xlabel('Max Elevation [km]')
+plt.ylabel(r'Optimized $\tau_c$')
+
+out_data=np.concatenate((eidx.reshape((len(eidx),1)),k_e_optim.reshape((len(eidx),1)),tau_c_optim.reshape((len(eidx),1))),axis=1)
+dfout=pd.DataFrame(out_data,columns=['cluster','k_e','tau_c'])
+dfout.to_csv('result_tables/optimized_ero_k_e_tau_c.csv',index=False)

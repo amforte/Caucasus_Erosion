@@ -14,17 +14,12 @@ df=pd.read_csv('result_tables/GRDC_Clusters.csv')
 cluster=df['Cluster'].to_numpy().astype('int')
 grdc_id=df['GRDC_ID'].to_numpy().astype('int')
 
-qdf=pd.read_csv('data_tables/grdc_seasonal_values.csv')
+qdf=pd.read_csv('data_tables/grdc_summary_values.csv')
 mR=qdf['mean_runoff_mm_day'].to_numpy()
-mz=qdf['maxz_m'].to_numpy()
+mz=qdf['maxz'].to_numpy()
 do=qdf['dist_from_sw_km'].to_numpy()
 d=np.copy(do)
 d[np.isnan(d)]=150
-
-idx=mR>0.3
-mR=mR[idx]
-mz=mz[idx]
-d=d[idx]
 
 color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
 
