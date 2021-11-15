@@ -9,6 +9,7 @@ Created on Sat Nov 13 15:10:22 2021
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.signal import find_peaks
 
 df=pd.read_csv('result_tables/grdc_basin_clusters.csv')
 cluster=df['cluster'].to_numpy().astype('int')
@@ -35,10 +36,21 @@ for i in range(4):
         bdf=pd.read_csv(fn)
         dn=bdf['day_number'].to_numpy()
         mnR=bdf['grdc_smoothed_mean_daily_runoff_mm_day'].to_numpy()
+        mnP=bdf['trmm_smoothed_mean_daily_rainfall_mm_day'].to_numpy()
+        pks_a=find_peaks(mnP,prominence=1)
+        pks=pks_a[0]
+        pks_max=np.argmax(mnP[pks])
+        
         if mzOI[j]<2700:
             plt.plot(dn,mnR,c=color_list[i],linewidth=1,linestyle=':')
+            plt.scatter(dn[pks[pks_max]],mnP[pks[pks_max]],c=color_list[i],s=20)
         else:
             plt.plot(dn,mnR,c=color_list[i],linewidth=2)
+            plt.scatter(dn[pks[pks_max]],mnP[pks[pks_max]],c=color_list[i],s=40,marker='s')
+    plt.axvline(59,c='k',linewidth=0.5,linestyle='--')
+    plt.axvline(151,c='k',linewidth=0.5,linestyle='--')
+    plt.axvline(243,c='k',linewidth=0.5,linestyle='--')
+    plt.axvline(334,c='k',linewidth=0.5,linestyle='--')
     plt.xlabel('Day in Year')
     plt.ylabel('Smoothed Daily Mean Runoff [mm]')
     plt.xlim((0,365))
@@ -60,6 +72,7 @@ for i in range(4):
             plt.plot(dn,mnP,c=color_list[i],linewidth=1,linestyle=':')
         else:
             plt.plot(dn,mnP,c=color_list[i],linewidth=2)
+
     plt.xlabel('Day in Year')
     plt.ylabel('Smoothed Daily Mean Rainfall [mm]')
     plt.xlim((0,365))
