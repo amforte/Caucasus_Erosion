@@ -64,6 +64,7 @@ NGRDC=len(mR)
 edf=pd.read_csv('data_tables/gc_ero_master_table.csv')
 ecenters=pd.read_csv('data_tables/grdc_outlines/Ebsns.csv')
 erun=pd.read_csv('result_tables/estimate_runoff_power.csv')
+edist=pd.read_csv('data_tables/swath_distances.txt')
 
 ksn=edf['mean_ksn'].to_numpy()
 e=edf['St_E_rate_m_Myr'].to_numpy()
@@ -71,11 +72,14 @@ eu=edf['St_Ext_Unc'].to_numpy()
 ksnu=edf['se_ksn'].to_numpy()
 emaxZ=edf['max_el'].to_numpy()/1000
 eminZ=edf['outlet_elevation'].to_numpy()/1000
+emnZ=edf['mean_el'].to_numpy()/1000
 erZ=emaxZ-eminZ
 emSN=edf['mean_SNOWstd'].to_numpy()
 emR=erun['mean_runoff'].to_numpy()
 ex=ecenters['lon'].to_numpy()
 ey=ecenters['lat'].to_numpy()
+ealong=edist['D_along_SW'].to_numpy()
+eacross=edist['D_from_SW'].to_numpy()
 
 edf2=pd.read_csv('result_tables/optimized_ero_k_e_tau_c.csv')
 ecluster_label=edf2['cluster'].to_numpy().astype(int)
@@ -154,17 +158,21 @@ plt.figure(num=3,figsize=(25,20))
 plt.subplot(2,2,1)
 for i in range(num_clustb):
     plt.scatter(cb[cluster_label==i],mR[cluster_label==i],c=color_list[i])
+    plt.scatter(cmb[i],mR_pop[i],c=color_list[i],s=60,marker='s',edgecolors='k')
 plt.xlabel('Shape')
 plt.ylabel('Mean Runoff [mm/day]')
 
 plt.subplot(2,2,2)
 for i in range(num_clustb):
     plt.scatter(sb[cluster_label==i],mR[cluster_label==i],c=color_list[i])
+    plt.scatter(smb[i],mR_pop[i],c=color_list[i],s=60,marker='s',edgecolors='k')
 plt.xlabel('Scale')
 plt.ylabel('Mean Runoff [mm/day]')
 
 plt.subplot(2,2,3)
 for i in range(num_clustb):
+    # plt.scatter(mR[cluster_label==i],mnZ[cluster_label==i],c=color_list[i])
+    # plt.scatter(emR[ecluster_label==i],emnZ[ecluster_label==i],c=color_list[i],zorder=0,marker='s',s=20,alpha=0.5)    
     plt.scatter(mR[cluster_label==i],maxZ[cluster_label==i],c=color_list[i])
     plt.scatter(emR[ecluster_label==i],emaxZ[ecluster_label==i],c=color_list[i],zorder=0,marker='s',s=20,alpha=0.5)
 plt.scatter(emR[ecluster_label==4],emaxZ[ecluster_label==4],s=10,c='gray',zorder=2,marker='s',alpha=0.5)
@@ -264,8 +272,8 @@ t_c_l=tau_c_optim-tau_c_q25
 t_c_u=tau_c_q75-tau_c_optim
 t_c_err=np.concatenate((t_c_l.reshape(1,len(t_c_l)),t_c_u.reshape((1,len(t_c_u)))),axis=0) 
    
-plt.figure(num=5,figsize=(20,20))
-plt.subplot(2,2,1)
+plt.figure(num=5,figsize=(30,20))
+plt.subplot(2,3,1)
 for i in range(num_clustb):
     plt.errorbar(emR[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emR[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -275,7 +283,7 @@ plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel('Optimized $k_{e}$')
 plt.yscale('log')
 
-plt.subplot(2,2,2)
+plt.subplot(2,3,2)
 for i in range(num_clustb):
     plt.errorbar(emaxZ[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emaxZ[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -285,7 +293,17 @@ plt.xlabel('Max Elevation [km]')
 plt.ylabel('Optimized $k_{e}$')
 plt.yscale('log')
 
-plt.subplot(2,2,3)
+plt.subplot(2,3,3)
+for i in range(num_clustb):
+    plt.errorbar(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
+    plt.scatter(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
+    plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
+plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
+plt.xlabel('Distance Across Swath [km]')
+plt.ylabel('Optimized $k_{e}$')
+plt.yscale('log')
+
+plt.subplot(2,3,4)
 for i in range(num_clustb):
     plt.errorbar(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -294,11 +312,20 @@ plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
 plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel(r'Optimized $\tau_c$')
 
-plt.subplot(2,2,4)
+plt.subplot(2,3,5)
 for i in range(num_clustb):
     plt.errorbar(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
     plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
 plt.xlabel('Max Elevation [km]')
+plt.ylabel(r'Optimized $\tau_c$')
+
+plt.subplot(2,3,6)
+for i in range(num_clustb):
+    plt.errorbar(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
+    plt.scatter(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
+    plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
+plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
+plt.xlabel('Distance Across Swath [km]')
 plt.ylabel(r'Optimized $\tau_c$')
