@@ -267,7 +267,7 @@ t_c_err=np.concatenate((t_c_l.reshape(1,len(t_c_l)),t_c_u.reshape((1,len(t_c_u))
 plt.figure(num=5,figsize=(20,20))
 plt.subplot(2,2,1)
 for i in range(num_clustb):
-    plt.errorbar(emR[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],c=color_list[i],zorder=0)
+    plt.errorbar(emR[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emR[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
     plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
@@ -277,7 +277,7 @@ plt.yscale('log')
 
 plt.subplot(2,2,2)
 for i in range(num_clustb):
-    plt.errorbar(emaxZ[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],c=color_list[i],zorder=0)
+    plt.errorbar(emaxZ[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emaxZ[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
     plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
@@ -287,7 +287,7 @@ plt.yscale('log')
 
 plt.subplot(2,2,3)
 for i in range(num_clustb):
-    plt.errorbar(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],c=color_list[i],zorder=0)
+    plt.errorbar(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
     plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
@@ -296,7 +296,7 @@ plt.ylabel(r'Optimized $\tau_c$')
 
 plt.subplot(2,2,4)
 for i in range(num_clustb):
-    plt.errorbar(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],c=color_list[i],zorder=0)
+    plt.errorbar(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
     plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')

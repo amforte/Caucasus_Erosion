@@ -314,6 +314,6 @@ clustmdf=pd.DataFrame(clustmdata,columns=['cluster','c_mean','s_mean','r_mean','
 clustmdf.to_csv('result_tables/grdc_mean_clusters.csv',index=False)
     
 out_data=np.concatenate((eidx.reshape((len(eidx),1)),k_e_optim,tau_c_optim),axis=1)
-dfout=pd.DataFrame(out_data,columns=['cluster','k_e_mean','k_e_median','k_e_std','k_e_q25','k_e_975',
+dfout=pd.DataFrame(out_data,columns=['cluster','k_e_mean','k_e_median','k_e_std','k_e_q25','k_e_q75',
                                      'tau_c_mean','tau_c_median','tau_c_std','tau_c_q25','tau_c_q75'])
 dfout.to_csv('result_tables/optimized_ero_k_e_tau_c.csv',index=False)
