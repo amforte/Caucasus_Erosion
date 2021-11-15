@@ -47,28 +47,6 @@ def bin_Q(Qs,Qf):
     QfQ1=np.flip(QfQ1)
     QfQ3=np.flip(QfQ3) 
     return Qsm,Qfm,QsQ1,QsQ3,QfQ1,QfQ3
-
-# def min_k_e(X,ks,ksu,e,eu,R,c,s,ns,seed):
-#     cl=stim.set_constants(R,X,dist_type='weibull')
-#     ks_dist=np.random.normal(ks,ksu,ns)
-#     e_dist=np.random.normal(e,eu,ns)
-#     ep=np.zeros((ns))
-#     with NumpyRNGContext(seed):
-#         for i in range(ns):
-#             [ep[i],_,_]=stim.stim_one(ks_dist[i],c,cl,sc=s)
-#     rmse=np.sqrt(np.sum((e_dist-ep)**2)/ns)
-#     return rmse
-
-# def min_tau_c(X,k_e,ks,ksu,e,eu,R,c,s,ns,seed):
-#     cl=stim.set_constants(R,k_e,dist_type='weibull',tau_c=X)
-#     ks_dist=np.random.normal(ks,ksu,ns)
-#     e_dist=np.random.normal(e,eu,ns)
-#     ep=np.zeros((ns))
-#     with NumpyRNGContext(seed):
-#         for i in range(ns):
-#             [ep[i],_,_]=stim.stim_one(ks_dist[i],c,cl,sc=s)
-#     rmse=np.sqrt(np.sum((e_dist-ep)**2)/ns)
-#     return rmse\
    
 def min_k_e_optim(ks,ksu,e,eu,R,c,s,ns,seed):
     # Define random samples of ks and E
