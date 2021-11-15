@@ -80,8 +80,12 @@ ey=ecenters['lat'].to_numpy()
 edf2=pd.read_csv('result_tables/optimized_ero_k_e_tau_c.csv')
 ecluster_label=edf2['cluster'].to_numpy().astype(int)
 num_clustb=np.max(ecluster_label)+1
-k_e_optim=edf2['k_e'].to_numpy()
-tau_c_optim=edf2['tau_c'].to_numpy()
+k_e_optim=edf2['k_e_median'].to_numpy()
+tau_c_optim=edf2['tau_c_median'].to_numpy()
+k_e_q25=edf2['k_e_q25'].to_numpy()
+k_e_q75=edf2['k_e_q75'].to_numpy()
+tau_c_q25=edf2['tau_c_q25'].to_numpy()
+tau_c_q75=edf2['tau_c_q75'].to_numpy()
 
 # Fixed
 k_e_fix=np.median(k_e_optim)
@@ -248,10 +252,22 @@ for i in range(num_clustb):
     plt.xlim((10,10000))
     plt.xscale('log')
     plt.ylim((0,550))
-    
+
+
+## Evaluate optimizations
+
+# Structure error bars
+k_e_l=k_e_optim-k_e_q25
+k_e_u=k_e_q75-k_e_optim
+k_e_err=np.concatenate((k_e_l.reshape(1,len(k_e_l)),k_e_u.reshape((1,len(k_e_u)))),axis=0)
+t_c_l=tau_c_optim-tau_c_q25
+t_c_u=tau_c_q75-tau_c_optim
+t_c_err=np.concatenate((t_c_l.reshape(1,len(t_c_l)),t_c_u.reshape((1,len(t_c_u)))),axis=0) 
+   
 plt.figure(num=5,figsize=(20,20))
 plt.subplot(2,2,1)
 for i in range(num_clustb):
+    plt.errorbar(emR[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],c=color_list[i],zorder=0)
     plt.scatter(emR[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
     plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
@@ -261,6 +277,7 @@ plt.yscale('log')
 
 plt.subplot(2,2,2)
 for i in range(num_clustb):
+    plt.errorbar(emaxZ[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],c=color_list[i],zorder=0)
     plt.scatter(emaxZ[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
     plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
@@ -270,6 +287,7 @@ plt.yscale('log')
 
 plt.subplot(2,2,3)
 for i in range(num_clustb):
+    plt.errorbar(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],c=color_list[i],zorder=0)
     plt.scatter(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
     plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
@@ -278,6 +296,7 @@ plt.ylabel(r'Optimized $\tau_c$')
 
 plt.subplot(2,2,4)
 for i in range(num_clustb):
+    plt.errorbar(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],c=color_list[i],zorder=0)
     plt.scatter(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
     plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
 plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')

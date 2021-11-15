@@ -48,28 +48,70 @@ def bin_Q(Qs,Qf):
     QfQ3=np.flip(QfQ3) 
     return Qsm,Qfm,QsQ1,QsQ3,QfQ1,QfQ3
 
-def min_k_e(X,ks,ksu,e,eu,R,c,s,ns,seed):
-    cl=stim.set_constants(R,X,dist_type='weibull')
-    ks_dist=np.random.normal(ks,ksu,ns)
-    e_dist=np.random.normal(e,eu,ns)
-    ep=np.zeros((ns))
-    with NumpyRNGContext(seed):
-        for i in range(ns):
-            [ep[i],_,_]=stim.stim_one(ks_dist[i],c,cl,sc=s)
-    rmse=np.sqrt(np.sum((e_dist-ep)**2)/ns)
-    return rmse
+# def min_k_e(X,ks,ksu,e,eu,R,c,s,ns,seed):
+#     cl=stim.set_constants(R,X,dist_type='weibull')
+#     ks_dist=np.random.normal(ks,ksu,ns)
+#     e_dist=np.random.normal(e,eu,ns)
+#     ep=np.zeros((ns))
+#     with NumpyRNGContext(seed):
+#         for i in range(ns):
+#             [ep[i],_,_]=stim.stim_one(ks_dist[i],c,cl,sc=s)
+#     rmse=np.sqrt(np.sum((e_dist-ep)**2)/ns)
+#     return rmse
 
-def min_tau_c(X,k_e,ks,ksu,e,eu,R,c,s,ns,seed):
-    cl=stim.set_constants(R,k_e,dist_type='weibull',tau_c=X)
-    ks_dist=np.random.normal(ks,ksu,ns)
-    e_dist=np.random.normal(e,eu,ns)
-    ep=np.zeros((ns))
-    with NumpyRNGContext(seed):
-        for i in range(ns):
-            [ep[i],_,_]=stim.stim_one(ks_dist[i],c,cl,sc=s)
-    rmse=np.sqrt(np.sum((e_dist-ep)**2)/ns)
-    return rmse
-        
+# def min_tau_c(X,k_e,ks,ksu,e,eu,R,c,s,ns,seed):
+#     cl=stim.set_constants(R,k_e,dist_type='weibull',tau_c=X)
+#     ks_dist=np.random.normal(ks,ksu,ns)
+#     e_dist=np.random.normal(e,eu,ns)
+#     ep=np.zeros((ns))
+#     with NumpyRNGContext(seed):
+#         for i in range(ns):
+#             [ep[i],_,_]=stim.stim_one(ks_dist[i],c,cl,sc=s)
+#     rmse=np.sqrt(np.sum((e_dist-ep)**2)/ns)
+#     return rmse\
+   
+def min_k_e_optim(ks,ksu,e,eu,R,c,s,ns,seed):
+    # Define random samples of ks and E
+    with NumpyRNGContext(seed): 
+        ks_dist=np.random.normal(ks,ksu,ns)
+        e_dist=np.random.normal(e,eu,ns)
+    # Generate container 
+    k_e_ind=np.zeros((ns))
+    # Define internal minimization function
+    def min_k_e_internal(X,ksi,ei,R,c,s):
+        cl=stim.set_constants(R,X,dist_type='weibull')
+        [ep,_,_]=stim.stim_one(ksi,c,cl,sc=s)
+        return np.abs(ep-e)**2
+    # Begin minimization loop
+    for i in range(ns):
+        args=(ks_dist[i],e_dist[i],R,c,s)
+        res=minimize_scalar(min_k_e_internal,args=args,bounds=[1e-20,1e-6],
+                            method='bounded',
+                            options={'maxiter':500000,'xatol':1e-20})
+        k_e_ind[i]=res.x
+    return np.mean(k_e_ind),np.median(k_e_ind),np.std(k_e_ind),np.percentile(k_e_ind,25),np.percentile(k_e_ind,75)
+
+def min_tau_c_optim(k_e,ks,ksu,e,eu,R,c,s,ns,seed):
+    # Define random samples of ks and E
+    with NumpyRNGContext(seed): 
+        ks_dist=np.random.normal(ks,ksu,ns)
+        e_dist=np.random.normal(e,eu,ns)
+    # Generate container 
+    tau_c_ind=np.zeros((ns))
+    # Define internal minimization function
+    def min_tau_c_internal(X,k_e,ksi,ei,R,c,s):
+        cl=stim.set_constants(R,k_e,dist_type='weibull',tau_c=X)
+        [ep,_,_]=stim.stim_one(ksi,c,cl,sc=s)
+        return np.abs(ep-e)**2
+    # Begin minimization loop
+    for i in range(ns):
+        args=(k_e,ks_dist[i],e_dist[i],R,c,s)
+        res=minimize_scalar(min_tau_c_internal,args=args,bounds=[10,100],
+                            method='bounded',
+                            options={'maxiter':500000,'xatol':1e-20})
+        tau_c_ind[i]=res.x
+    return np.mean(tau_c_ind),np.median(tau_c_ind),np.std(tau_c_ind),np.percentile(tau_c_ind,25),np.percentile(tau_c_ind,75)
+       
 def weibull_tail_fit(x,y,thresh):
     n=len(x)
     ix=np.nonzero(y<thresh)[0][:1][0]
@@ -189,11 +231,6 @@ num_clustb=4
 
 kmb=KMeans(n_clusters=num_clustb,max_iter=5000,random_state=seed).fit(XSb)
 
-cluster_labels=kmb.labels_
-data=np.concatenate((ID.reshape((len(ID),1)),cluster_labels.reshape(len(ID),1)),axis=1)
-clustdf=pd.DataFrame(data,columns=['grdc_id','cluster'])
-clustdf.to_csv('result_tables/grdc_basin_clusters.csv',index=False)
-
 ### Start Plotting   
 color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
 
@@ -233,31 +270,38 @@ for i in range(num_clustb):
     [cmb[i],smb[i],_,_]=weibull_mt(Qsm,Qfm,mR_pop[i],1.5,1) 
     
 ### Optimize k_e and tau_c
-k_e_optim=np.zeros((len(e)))
-tau_c_optim=np.zeros((len(e))) 
-for i in range(len(e)):    
-    args=(ksn[i],ksnu[i],e[i],eu[i],emR[i],cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],num_iterations,5)
-    res=minimize_scalar(min_k_e,args=args,bounds=[1e-20,1e-6],method='bounded',
-                        options={'maxiter':500000,'xatol':1e-20})
-    k_e_optim[i]=res.x     
+k_e_optim=np.zeros((len(e),5))
+tau_c_optim=np.zeros((len(e),5)) 
+for i in range(len(e)):
+    [k_e_optim[i,0],k_e_optim[i,1],
+     k_e_optim[i,2],k_e_optim[i,3],
+     k_e_optim[i,4]]=min_k_e_optim(ksn[i],ksnu[i],e[i],eu[i],emR[i],
+                                   cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],
+                                   num_iterations,5)   
     
 k_e_o=np.zeros((num_clustb))
 for i in range(num_clustb):
-    k_e_o[i]=np.median(k_e_optim[eidx==i])
+    k_e_o[i]=np.median(k_e_optim[eidx==i,1]) # Use median of individiual estimates
 k_e_fix=np.median(k_e_optim)  
 
 for i in range(len(e)):    
-    args=(k_e_fix,ksn[i],ksnu[i],e[i],eu[i],emR[i],cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],num_iterations,5)
-    res=minimize_scalar(min_tau_c,args=args,bounds=[10,90],method='bounded',
-                        options={'maxiter':500000,'xatol':1e-20})
-    tau_c_optim[i]=res.x
+    [tau_c_optim[i,0],tau_c_optim[i,1],
+     tau_c_optim[i,2],tau_c_optim[i,3],
+     tau_c_optim[i,4]]=min_tau_c_optim(k_e_fix,ksn[i],ksnu[i],e[i],eu[i],emR[i],
+                                       cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],
+                                       num_iterations,5)
 
 tau_c_o=np.zeros((num_clustb))
 for i in range(num_clustb):
-    tau_c_o[i]=np.median(tau_c_optim[eidx==i])
+    tau_c_o[i]=np.median(tau_c_optim[eidx==i,1]) # Use median of individiual estimates
 tau_c_fix=np.median(tau_c_optim)
 
 ### Output 
+cluster_labels=kmb.labels_
+data=np.concatenate((ID.reshape((len(ID),1)),cluster_labels.reshape(len(ID),1)),axis=1)
+clustdf=pd.DataFrame(data,columns=['grdc_id','cluster'])
+clustdf.to_csv('result_tables/grdc_basin_clusters.csv',index=False)
+
 clustmdata=np.concatenate((clust_num.reshape((len(clust_num),1)),
                      cb_pop.reshape((len(cb_pop),1)),
                      sb_pop.reshape((len(sb_pop),1)),
@@ -269,6 +313,7 @@ clustmdata=np.concatenate((clust_num.reshape((len(clust_num),1)),
 clustmdf=pd.DataFrame(clustmdata,columns=['cluster','c_mean','s_mean','r_mean','c_aggr','s_aggr','k_e','tau_c'])
 clustmdf.to_csv('result_tables/grdc_mean_clusters.csv',index=False)
     
-out_data=np.concatenate((eidx.reshape((len(eidx),1)),k_e_optim.reshape((len(eidx),1)),tau_c_optim.reshape((len(eidx),1))),axis=1)
-dfout=pd.DataFrame(out_data,columns=['cluster','k_e','tau_c'])
+out_data=np.concatenate((eidx.reshape((len(eidx),1)),k_e_optim,tau_c_optim),axis=1)
+dfout=pd.DataFrame(out_data,columns=['cluster','k_e_mean','k_e_median','k_e_std','k_e_q25','k_e_975',
+                                     'tau_c_mean','tau_c_median','tau_c_std','tau_c_q25','tau_c_q75'])
 dfout.to_csv('result_tables/optimized_ero_k_e_tau_c.csv',index=False)
