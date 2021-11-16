@@ -25,7 +25,7 @@ d[np.isnan(d)]=150
 color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
 
 ## Figure 4
-f4=plt.figure(num=4,figsize=(15,15))
+f1=plt.figure(num=1,figsize=(15,15))
 for i in range(4):
     idx=cluster==i
     idOI=grdc_id[idx]
@@ -57,7 +57,7 @@ for i in range(4):
     plt.ylim((0,18))
 
 ## Figure 5
-f5=plt.figure(num=5,figsize=(20,10))
+f2=plt.figure(num=2,figsize=(20,10))
 for i in range(4):
     idx=cluster==i
     idOI=grdc_id[idx]
@@ -94,7 +94,7 @@ for i in range(4):
     
     
 ## Figure 6
-f6=plt.figure(num=6,figsize=(15,15))
+f3=plt.figure(num=3,figsize=(15,15))
 for i in range(4):
     idx=cluster==i
     idOI=grdc_id[idx]
@@ -117,7 +117,7 @@ for i in range(4):
     plt.ylim((-12,5))  
     
 ## Figure 7
-f7=plt.figure(num=7,figsize=(20,15))
+f4=plt.figure(num=4,figsize=(20,15))
 for i in range(4):
     idx=cluster==i
     idOI=grdc_id[idx]
@@ -197,3 +197,5 @@ for i in range(4):
     ax.axvline(151,c='k',linewidth=0.5,linestyle='--')
     ax.axvline(243,c='k',linewidth=0.5,linestyle='--')
     ax.axvline(334,c='k',linewidth=0.5,linestyle='--') 
+    
+   
