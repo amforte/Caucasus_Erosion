@@ -16,6 +16,9 @@ import matplotlib.pyplot as plt
 import glob
 from astropy.utils import NumpyRNGContext
 from astropy.stats import bootstrap
+from matplotlib import colors
+from cmcrameri import cm
+
 
 def survive(Q):
     Qstar=Q/np.mean(Q)
@@ -307,47 +310,67 @@ for i in range(N):
         plt.xlim((10**-2,10**2))
         
 # Comparison Plot
-plt.figure(N+1,figsize=(10,10))
-plt.subplot(2,2,1)
-plt.plot(np.arange(0,8,1),np.arange(0,8,1),c='k',linestyle=':')
-plt.scatter(mnR,mnt_best*mnR,s=20,c='b',label='Minimum')
-plt.scatter(mnR,whole_fits[:,2]*np.ravel(mnR),s=20,c='k',label='Whole Fit')
+
+
+fout=plt.figure(N+1,figsize=(20,5))
+
+cnorm=colors.Normalize(vmin=0.25,vmax=1.75)
+nnorm=colors.Normalize(vmin=0.5,vmax=2.5)
+
+ax1=plt.subplot(1,3,1)
+ax1.tick_params(direction='in',which='both')
+plt.plot(np.arange(0,8,1),np.arange(0,8,1),c='k',linestyle='--')
+plt.plot(np.arange(0,8,1),np.arange(0,8,1)-1,c='k',linestyle=':')
+sc1=plt.scatter(mnR,mnt_best*mnR,s=40,c=ct_best,label='Minimum',norm=cnorm,cmap=cm.lapaz)
+# plt.scatter(mnR,whole_fits[:,2]*np.ravel(mnR),s=20,c='k',label='Whole Fit')
 plt.xlabel('Observed Mean Runoff [mm/day]')
 plt.ylabel('Implied Mean Runoff [mm/day]') 
-plt.legend(loc='best')
+# plt.legend(loc='best')
 plt.xlim((0,7))
 plt.ylim((0,7))
 plt.title('Runoff Weight = '+str(runoff_weight))
+cbar1=plt.colorbar(sc1,ax=ax1)
+cbar1.ax.set_ylabel('Shape Parameter')
 #
-plt.subplot(2,2,2)
-plt.plot(np.arange(0,85,5),np.arange(0,85,5),c='k',linestyle=':')
-plt.scatter(targ_obs,targ_best,s=20,c='b',label='Minimum')
-plt.scatter(targ_obs,targ_whole,s=20,c='k',label='Whole Fit')
+ax2=plt.subplot(1,3,2)
+ax2.tick_params(direction='in',which='both')
+plt.plot(np.arange(0,100,5),np.arange(0,100,5),c='k',linestyle='--')
+plt.plot(np.arange(0,100,5),np.arange(0,100,5)-10,c='k',linestyle=':')
+plt.plot(np.arange(0,100,5),np.arange(0,100,5)-20,c='k',linestyle=':')
+sc2=plt.scatter(targ_obs,targ_best,s=40,c=ct_best,label='Minimum',norm=cnorm,cmap=cm.lapaz)
+# plt.scatter(targ_obs,targ_whole,s=20,c='k',label='Whole Fit')
 plt.xlabel('Observed 2 yr Return Runoff [mm/day]')
 plt.ylabel('Implied 2 yr Return Runoff [mm/day]')
-plt.legend(loc='best')
+plt.xlim((0,85))
+plt.ylim((0,85))
+
+# plt.legend(loc='best')
 plt.title('Tail Weight = '+str(tail_weight))
+cbar2=plt.colorbar(sc2,ax=ax2)
+cbar2.ax.set_ylabel('Shape Parameter')
+
 #
-plt.subplot(2,2,3)
+ax3=plt.subplot(1,3,3)
+ax3.tick_params(direction='in',which='both')
 st_error=np.transpose(st_best_ci)
 st_error[0,:]=np.transpose(st_best)-st_error[0,:]
 st_error[1,:]=st_error[1,:]-np.transpose(st_best)
 ct_error=np.transpose(ct_best_ci)
 ct_error[0,:]=np.transpose(ct_best)-ct_error[0,:]
 ct_error[1,:]=np.transpose(ct_best)-ct_error[1,:]
-plt.errorbar(st_best,ct_best,yerr=np.ravel(ct_best_std),xerr=np.ravel(st_best_std),ecolor='b',linestyle='',elinewidth=0.5)
-plt.scatter(st_best,ct_best,c='b',s=20)
-plt.scatter(whole_fits[:,1],whole_fits[:,0],c='k',s=20)
+plt.errorbar(st_best,ct_best,yerr=np.ravel(ct_best_std),xerr=np.ravel(st_best_std),ecolor='k',linestyle='',elinewidth=0.5)
+sc3=plt.scatter(st_best,ct_best,c=np.log10(Nta_best),s=40,norm=nnorm,cmap=cm.tofino,zorder=2)
+# plt.scatter(whole_fits[:,1],whole_fits[:,0],c='k',s=20)
 plt.ylabel('Shape Parameter')
 plt.xlabel('Scale Parameter')
 plt.xlim((0,1.5))
-plt.ylim((0,5))
-plt.legend(loc='best')
+plt.ylim((0.25,1.75))
+# plt.legend(loc='best')
+cbar3=plt.colorbar(sc3,ax=ax3)
+cbar3.ax.set_ylabel('Log Threshold [Events/Year]')
 #
-plt.subplot(2,2,4)
-plt.scatter(ct_best,Nta_best,c='b',s=20)
-plt.xlabel('Shape (c)')
-plt.ylabel('Threshold (Events/Year)')
+fout.savefig('distribution_fits.pdf')
+
 
 # Package output
 # Sort arrays by GRDC ID to match other tables

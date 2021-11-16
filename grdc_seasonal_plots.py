@@ -60,8 +60,8 @@ for i in range(len(grdc_id)):
     r_theta=(rdn/365)*2*np.pi
     p_theta=(pdn/365)*2*np.pi
     # Normalize to runoff angle
-    r_theta=r_theta-r_theta
     p_theta=p_theta-r_theta
+    r_theta=r_theta-r_theta
     # Convert to cartesian
     rx=np.cos(r_theta)
     ry=np.sin(r_theta)
@@ -69,6 +69,7 @@ for i in range(len(grdc_id)):
     py=np.sin(p_theta)
     rv=np.array([rx,ry,0])
     pv=np.array([px,py,0])
+        
     # Find angle between
     a=np.arctan2(np.linalg.norm(np.cross(rv,pv)),np.dot(rv,pv))
     diff_peak[i,0]=rdn
@@ -78,7 +79,7 @@ dp=diff_peak[:,2]
 
 
 ## Master Figure - Shape
-f1=plt.figure(num=1,figsize=(15,20))
+f1=plt.figure(num=100,figsize=(15,20))
 
 axl1=plt.subplot(4,2,1)
 axl2=plt.subplot(4,2,3)
@@ -215,7 +216,7 @@ axr3.set_ylabel('Seasonal Snow STD')
 
 
 ## Master Figure - Scale
-f2=plt.figure(num=2,figsize=(15,20))
+f2=plt.figure(num=200,figsize=(15,20))
 
 axl1=plt.subplot(4,2,1)
 axl2=plt.subplot(4,2,3)
@@ -351,6 +352,9 @@ axr1.set_ylabel('Seasonal Fraction')
 axr2.set_ylabel('Seasonal Fraction')       
 axr3.set_ylabel('Seasonal Snow STD')
 
+
+f1.savefig('seasonal_shape.pdf')
+f2.savefig('seasonal_scale.pdf')
 
 # ## Figure 3
 # f3=plt.figure(num=3,figsize=(15,15))

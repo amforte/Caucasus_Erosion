@@ -57,6 +57,25 @@ def powr(B,x):
 lm=odr.Model(lin)
 pm=odr.Model(powr)
 
+def rmse(obs,pred):
+    return np.sqrt(np.sum((obs-pred)**2)/len(obs))
+
+f2=plt.figure(2,figsize=(10,5))
+ax1=plt.subplot(1,2,1)
+ax1.set_xlim((1,6))
+ax1.set_ylim((0.4,10))
+ax1.set_yscale('log')
+ax1.set_xscale('log')
+ax1.set_ylabel('Mean Runoff [mm/day]')
+ax1.set_xlabel('Mean TRMM Rainfall [mm/day]')
+ax1.tick_params(direction='in',which='both')
+ax2=plt.subplot(1,2,2)
+ax2.set_xlim((1,6))
+ax2.set_ylim((0,1.75))
+ax2.set_ylabel('Mean Runoff / Mean Rainfall')
+ax2.set_xlabel('Mean TRMM Rainfall [mm/day]')
+ax2.tick_params(direction='in',which='both')
+
 plt.figure(1,figsize=(10,25))
 
 rain_vec=np.linspace(0.5,11,100)
@@ -69,6 +88,10 @@ lodr=odr.ODR(data,lm,beta0=[2,-1])
 lres=lodr.run()
 podr=odr.ODR(data,pm,beta0=[1,2,1])
 pres=podr.run()
+
+
+r=np.round(rmse(mR,powr(pres.beta,mRain)),2)
+
 a=np.round(pres.beta[0],4)
 b=np.round(pres.beta[1],2)
 c=np.round(pres.beta[2],2)
@@ -84,7 +107,6 @@ plt.xscale('log')
 plt.yscale('log')
 plt.title('Annual')
 
-
 plt.subplot(5,2,2)
 plt.scatter(mRain,rr,s=20,c='k',label='Observed GRDC')
 plt.scatter(emRain,lin(lres.beta,emRain)/emRain,c='r',s=20,label='Linear Fit')
@@ -93,6 +115,15 @@ plt.legend(loc='best')
 plt.ylabel('Runoff Ratio')
 plt.xlim((0,11))
 plt.ylim((0,2.6))
+
+ax1.scatter(mRain,mR,s=20,c='k')
+ax1.plot(rain_vec,powr(pres.beta,rain_vec),c='b',label='y = '+str(a)+'$x^{'+str(b)+'}$ + '+str(c)+'; RMSE = '+str(r))
+ax1.legend(loc='best')
+ax2.scatter(mRain,rr,s=20,c='k',label='Observed GRDC')
+ax2.scatter(emRain,powr(pres.beta,emRain)/emRain,c='b',s=20,label='Power Fit')
+ax2.legend(loc='best')
+f2.savefig('estimate_runoff.pdf')
+
 
 plt.subplot(5,2,3)
 plt.scatter(djf_rain,djf_run,s=20,c='k')
