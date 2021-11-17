@@ -431,11 +431,24 @@ ax5_2.set_ylabel(r'Optimized $\Psi_c$')
 ######
 f4a=plt.figure(num=10,figsize=(15,5))
 
+# Multiplicative factors for scaling bubbles
+mf=20
+imf=1/2
+
 ax1=plt.subplot(1,2,1)
 for i in range(num_clustb):
-    plt.errorbar(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
-    plt.scatter(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
+    plt.errorbar(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],
+                 yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],
+                 zorder=0,linestyle='')
+    plt.scatter(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],
+                c=color_list[i],zorder=1,s=np.log10(e[ecluster_label==i]*imf)*mf)
     plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
+
+plt.scatter(60,1e-8,s=np.log10(10*imf)*mf,c='gray')
+plt.scatter(65,1e-8,s=np.log10(100*imf)*mf,c='gray')
+plt.scatter(70,1e-8,s=np.log10(1000*imf)*mf,c='gray')
+plt.scatter(75,1e-8,s=np.log10(10000*imf)*mf,c='gray')
+
 plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
 plt.xlabel('Distance Across Swath [km]')
 plt.ylabel('Optimized $k_{e}$')
@@ -459,8 +472,11 @@ ax2r.set_yscale('log')
 ax2r.set_ylim((20,90))
 ax2r.set_ylabel(r'Optimized $\tau_c$')
 for i in range(num_clustb):
-    ax2r.errorbar(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
-    ax2r.scatter(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
+    ax2r.errorbar(eacross[ecluster_label==i],
+                  tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],
+                  ecolor=color_list[i],zorder=0,linestyle='')
+    ax2r.scatter(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],
+                 c=color_list[i],zorder=1,s=np.log10(e[ecluster_label==i]*imf)*mf)
     ax2r.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
 ax2r.axhline(np.median(tau_c_optim),c='k',linestyle=':')
 
