@@ -353,8 +353,8 @@ axr2.set_ylabel('Seasonal Fraction')
 axr3.set_ylabel('Seasonal Snow STD')
 
 
-f1.savefig('seasonal_shape.pdf')
-f2.savefig('seasonal_scale.pdf')
+# f1.savefig('seasonal_shape.pdf')
+# f2.savefig('seasonal_scale.pdf')
 
 # ## Figure 3
 # f3=plt.figure(num=3,figsize=(15,15))

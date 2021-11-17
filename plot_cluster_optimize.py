@@ -10,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import weibull_min
 
+
 import stochastic_threshold as stim
 
 def survive(Q):
@@ -41,7 +42,7 @@ def bin_Q(Qs,Qf):
     QfQ1=np.flip(QfQ1)
     QfQ3=np.flip(QfQ3) 
     return Qsm,Qfm,QsQ1,QsQ3,QfQ1,QfQ3
-
+  
 # Load in data from GRDC basins
 df=pd.read_csv('result_tables/GRDC_Distribution_Fits.csv')
 mR=df['mean_R_obs'].to_numpy()
@@ -86,14 +87,20 @@ ecluster_label=edf2['cluster'].to_numpy().astype(int)
 num_clustb=np.max(ecluster_label)+1
 k_e_optim=edf2['k_e_median'].to_numpy()
 tau_c_optim=edf2['tau_c_median'].to_numpy()
+k_e_std=edf2['k_e_std'].to_numpy()
 k_e_q25=edf2['k_e_q25'].to_numpy()
 k_e_q75=edf2['k_e_q75'].to_numpy()
+tau_c_std=edf2['tau_c_std'].to_numpy()
 tau_c_q25=edf2['tau_c_q25'].to_numpy()
 tau_c_q75=edf2['tau_c_q75'].to_numpy()
 
 # Fixed
 k_e_fix=np.median(k_e_optim)
+k_e_lo=np.percentile(k_e_optim,25)
+k_e_hi=np.percentile(k_e_optim,75)
 tau_c_fix=np.median(tau_c_optim)
+tau_c_lo=np.percentile(tau_c_optim,25)
+tau_c_hi=np.percentile(tau_c_optim,75)
 k_e=np.ones((4))*k_e_fix
 t_c=np.ones((4))*tau_c_fix
 
@@ -115,7 +122,9 @@ tau_c_o=clustmdf['tau_c'].to_numpy()
 ### Start Plotting   
 color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
 
-plt.figure(num=2,figsize=(25,20))
+
+### FIGURE 1
+f1=plt.figure(num=1,figsize=(20,20))
 plt.subplot(2,2,1)
 for i in range(num_clustb):
     plt.scatter(mSN[cluster_label==i],maxZ[cluster_label==i],c=color_list[i])
@@ -127,9 +136,9 @@ plt.ylabel('Max Elevation [km]')
 plt.subplot(2,2,2)
 for i in range(num_clustb):
     plt.scatter(cb[cluster_label==i],maxZ[cluster_label==i],c=color_list[i])
-   
 plt.xlabel('Shape')
 plt.ylabel('Max Elevation [km]')
+
 
 plt.subplot(2,2,3)
 for i in range(num_clustb):
@@ -153,33 +162,31 @@ plt.xlabel('Longitude')
 plt.ylabel('Latitude')
 plt.gca().set_aspect('equal', adjustable='box')
 
-## 
-f2=plt.figure(num=3,figsize=(20,20))
-plt.subplot(2,2,3)
+### FIGURE 2 
+f2=plt.figure(num=2,figsize=(20,20))
+plt.subplot(2,2,1)
 for i in range(num_clustb):
     plt.scatter(cb[cluster_label==i],mR[cluster_label==i],c=color_list[i])
     plt.scatter(cmb[i],mR_pop[i],c=color_list[i],s=60,marker='s',edgecolors='k')
 plt.xlabel('Shape')
 plt.ylabel('Mean Runoff [mm/day]')
 
-plt.subplot(2,2,4)
+plt.subplot(2,2,2)
 for i in range(num_clustb):
     plt.scatter(sb[cluster_label==i],mR[cluster_label==i],c=color_list[i])
     plt.scatter(smb[i],mR_pop[i],c=color_list[i],s=60,marker='s',edgecolors='k')
 plt.xlabel('Scale')
 plt.ylabel('Mean Runoff [mm/day]')
 
-plt.subplot(2,2,1)
-for i in range(num_clustb):
-    # plt.scatter(mR[cluster_label==i],mnZ[cluster_label==i],c=color_list[i])
-    # plt.scatter(emR[ecluster_label==i],emnZ[ecluster_label==i],c=color_list[i],zorder=0,marker='s',s=20,alpha=0.5)    
+plt.subplot(2,2,3)
+for i in range(num_clustb):   
     plt.scatter(mR[cluster_label==i],maxZ[cluster_label==i],c=color_list[i])
     plt.scatter(emR[ecluster_label==i],emaxZ[ecluster_label==i],c=color_list[i],zorder=0,marker='D',s=20,alpha=0.5)
 plt.scatter(emR[ecluster_label==4],emaxZ[ecluster_label==4],s=10,c='gray',zorder=2,marker='D',alpha=0.5)
 plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel('Max Elevation [km]')
 
-plt.subplot(2,2,2)
+plt.subplot(2,2,4)
 for i in range(NGRDC):
     lldf=pd.read_csv('data_tables/grdc_outlines/Bsn_'+str(ID[i])+'.csv')
     lab=cluster_label[i]
@@ -193,8 +200,8 @@ plt.xlabel('Longitude')
 plt.ylabel('Latitude')
 plt.gca().set_aspect('equal', adjustable='box')
 
-
-f3=plt.figure(num=4,figsize=(25,10))
+### FIGURE 3 - No Distribution Dots
+f3=plt.figure(num=3,figsize=(25,10))
 for i in range(num_clustb):
     idx=cluster_label==i
     
@@ -251,7 +258,7 @@ for i in range(num_clustb):
         plt.scatter(e[ecluster_label==4],ksn[ecluster_label==4],s=10,marker='s',c='gray',alpha=0.5,zorder=0)         
     
     wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wcl,sc=smb[i],max_ksn=550)    
+    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='Fit to Composite')
     plt.legend(loc='best')   
 
@@ -261,8 +268,8 @@ for i in range(num_clustb):
     plt.xscale('log')
     plt.ylim((0,550))
 
-
-f3a=plt.figure(num=6,figsize=(25,10))
+### FIGURE 3 - No Lines
+f3a=plt.figure(num=4,figsize=(25,10))
 for i in range(num_clustb):
     idx=cluster_label==i
     
@@ -319,7 +326,7 @@ for i in range(num_clustb):
         plt.scatter(e[ecluster_label==4],ksn[ecluster_label==4],s=10,marker='s',c='gray',alpha=0.5,zorder=0)         
     
     wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wcl,sc=smb[i],max_ksn=550)    
+    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='Fit to Composite')
     plt.legend(loc='best')   
 
@@ -328,6 +335,72 @@ for i in range(num_clustb):
     plt.xlim((10,10000))
     plt.xscale('log')
     plt.ylim((0,550))
+
+### FIGURE 3 - Interquantile Range
+f3b=plt.figure(num=5,figsize=(25,10))
+for i in range(num_clustb):
+    idx=cluster_label==i
+    
+    plt.subplot(2,4,i+1)
+    
+    plt.title('Cluster '+str(i+1)) 
+    Qs=np.logspace(-1,2,100)
+    plt.plot(Qs*mR_pop[i],weibull_min.sf(Qs,c=cb_pop[i],loc=0,scale=sb_pop[i]),zorder=2,linewidth=2,c=color_list[i],linestyle='--')
+    ListQs=[]
+    ListQf=[]
+    for j in range(len(mR[idx])):
+        df=pd.read_csv('data_tables/grdc_discharge_time_series/GRDC_'+str(ID[idx][j])+'.csv')
+        Q=df['Q'].to_numpy()
+        [Qs,Qf]=survive(Q)
+        # plt.scatter(Qs*mR[idx][j],Qf,s=5,c='gray',alpha=0.5,zorder=0,edgecolors=None)
+        plt.plot(Qs*mR[idx][j],weibull_min.sf(Qs,c=cb[idx][j],loc=0,scale=sb[idx][j]),zorder=1,linewidth=0.5,c=color_list[i],alpha=0.75)
+        ListQs.append(Qs)
+        ListQf.append(Qf)
+    Qsaccum=np.concatenate(ListQs,axis=0)
+    Qfaccum=np.concatenate(ListQf,axis=0)
+    [Qsm,Qfm,QsQ1,QsQ3,QfQ1,QfQ3]=bin_Q(Qsaccum,Qfaccum)
+    
+    Qs=np.logspace(-1,2,100)
+    plt.plot(Qs*mR_pop[i],weibull_min.sf(Qs,c=cmb[i],loc=0,scale=smb[i]),zorder=2,linewidth=2,c=color_list[i],linestyle='-')
+    # plt.scatter(Qsm*mR_pop[i],Qfm,c='k',s=10,zorder=1)
+    
+    # QsIQ=np.concatenate((QsQ1.reshape(len(QsQ1),1),QsQ3.reshape(len(QsQ3),1)),axis=1)
+    # Qfm_=np.concatenate((Qfm.reshape(len(Qfm),1),Qfm.reshape(len(Qfm),1)),axis=1)
+    # plt.plot(np.transpose(QsIQ)*mR_pop[i],np.transpose(Qfm_),c='k',linewidth=0.5,zorder=0)
+    
+    plt.yscale('log')
+    plt.ylim((10**-4,1))
+    plt.xlabel('Runoff [mm/day]')
+    plt.ylabel('Exceedance Frequency')
+    plt.xlim((0,125))
+
+    plt.subplot(2,4,i+5)
+    plt.errorbar(e[ecluster_label==i],ksn[ecluster_label==i],ksnu[ecluster_label==i],eu[ecluster_label==i],ecolor=color_list[i],linestyle='',elinewidth=0.5)
+    plt.scatter(e[ecluster_label==i],ksn[ecluster_label==i],s=10,marker='s',c=color_list[i],alpha=0.5,zorder=0)
+
+    wcl=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
+    [KSpop,Epop,_,_]=stim.stim_range(cb_pop[i],wcl,sc=sb_pop[i],max_ksn=550)
+    plt.plot(Epop,KSpop,c=color_list[i],zorder=2,linewidth=2,label='Mean of Cluster',linestyle='--')
+           
+    wclb=stim.set_constants(mR_pop[i],k_e_fix,dist_type='weibull',tau_c=t_c[i])
+    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='Fit to Composite')
+        
+    wclb=stim.set_constants(mR_pop[i],k_e_lo,dist_type='weibull',tau_c=t_c[i])
+    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle=':',label='25% $k_{e}$')
+
+    wclb=stim.set_constants(mR_pop[i],k_e_hi,dist_type='weibull',tau_c=t_c[i])
+    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle=':',label='75% $k_{e}$')
+    plt.legend(loc='best')
+
+    plt.xlabel('Erosion Rate [m/Myr]')
+    plt.ylabel('$k_{sn}$')
+    plt.xlim((10,10000))
+    plt.xscale('log')
+    plt.ylim((0,550))
+
 
 ## Evaluate optimizations
 
@@ -338,8 +411,9 @@ k_e_err=np.concatenate((k_e_l.reshape(1,len(k_e_l)),k_e_u.reshape((1,len(k_e_u))
 t_c_l=tau_c_optim-tau_c_q25
 t_c_u=tau_c_q75-tau_c_optim
 t_c_err=np.concatenate((t_c_l.reshape(1,len(t_c_l)),t_c_u.reshape((1,len(t_c_u)))),axis=0) 
-   
-f4=plt.figure(num=5,figsize=(30,15))
+
+### FIGURE 4   
+f4=plt.figure(num=6,figsize=(30,15))
 plt.subplot(2,3,1)
 for i in range(num_clustb):
     plt.errorbar(emR[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
@@ -428,8 +502,8 @@ hi_psi=(k_e_fix)*(90**1.5)
 ax5_2.set_ylim((low_psi,hi_psi))
 ax5_2.set_ylabel(r'Optimized $\Psi_c$')
 
-######
-f4a=plt.figure(num=10,figsize=(15,5))
+### Figure 5 
+f5=plt.figure(num=7,figsize=(15,5))
 
 # Multiplicative factors for scaling bubbles
 mf=20
@@ -437,23 +511,26 @@ imf=1/2
 
 ax1=plt.subplot(1,2,1)
 for i in range(num_clustb):
-    plt.errorbar(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],
-                 yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],
-                 zorder=0,linestyle='')
-    plt.scatter(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],
+    ax1.errorbar(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],
+                  yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],
+                  zorder=0,linestyle='')
+    ax1.scatter(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],
                 c=color_list[i],zorder=1,s=np.log10(e[ecluster_label==i]*imf)*mf)
-    plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
+    ax1.axhline(k_e_o[i],c=color_list[i],linestyle=':')
+  
+ax1.scatter(60,1e-8,s=np.log10(10*imf)*mf,c='gray')
+ax1.scatter(65,1e-8,s=np.log10(100*imf)*mf,c='gray')
+ax1.scatter(70,1e-8,s=np.log10(1000*imf)*mf,c='gray')
+ax1.scatter(75,1e-8,s=np.log10(10000*imf)*mf,c='gray')
 
-plt.scatter(60,1e-8,s=np.log10(10*imf)*mf,c='gray')
-plt.scatter(65,1e-8,s=np.log10(100*imf)*mf,c='gray')
-plt.scatter(70,1e-8,s=np.log10(1000*imf)*mf,c='gray')
-plt.scatter(75,1e-8,s=np.log10(10000*imf)*mf,c='gray')
+ax1.axhline(np.median(k_e_optim),c='k',linestyle=':')
+ax1.axhline(k_e_hi,c='k',linestyle='--')
+ax1.axhline(k_e_lo,c='k',linestyle='--')
+ax1.set_xlabel('Distance Across Swath [km]')
+ax1.set_ylabel('Optimized $k_{e}$')
+ax1.set_yscale('log')
+ax1.set_ylim((10**-13,10**-7))
 
-plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
-plt.xlabel('Distance Across Swath [km]')
-plt.ylabel('Optimized $k_{e}$')
-plt.yscale('log')
-plt.ylim((10**-13,10**-7))
 
 ax1r=ax1.twinx()
 ax1r.set_ylim(((10**-13)*(tau_c_fix**1.5),(10**-7)*(tau_c_fix**1.5)))
@@ -476,12 +553,17 @@ for i in range(num_clustb):
                   tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],
                   ecolor=color_list[i],zorder=0,linestyle='')
     ax2r.scatter(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],
-                 c=color_list[i],zorder=1,s=np.log10(e[ecluster_label==i]*imf)*mf)
+                  c=color_list[i],zorder=1,s=np.log10(e[ecluster_label==i]*imf)*mf)
     ax2r.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
 ax2r.axhline(np.median(tau_c_optim),c='k',linestyle=':')
+ax2r.axhline(tau_c_hi,c='k',linestyle='--')
+ax2r.axhline(tau_c_lo,c='k',linestyle='--')
 
+
+# f1.savefig('cluster_z.pdf')
 # f2.savefig('cluster_class.pdf')
 # f3.savefig('cluster_ksn_e.pdf')
 # f3a.savefig('cluster_ksn_e.tif',dpi=300)
+f3b.savefig('cluster_range_k_e.pdf')
 # f4.savefig('cluster_ke.pdf')
-# f4a.savefig('cluster_ke2.pdf')
+f5.savefig('cluster_ke2.pdf')
