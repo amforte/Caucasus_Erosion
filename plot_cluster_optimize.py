@@ -339,7 +339,7 @@ t_c_l=tau_c_optim-tau_c_q25
 t_c_u=tau_c_q75-tau_c_optim
 t_c_err=np.concatenate((t_c_l.reshape(1,len(t_c_l)),t_c_u.reshape((1,len(t_c_u)))),axis=0) 
    
-f4=plt.figure(num=5,figsize=(20,20))
+f4=plt.figure(num=5,figsize=(30,15))
 plt.subplot(2,3,1)
 for i in range(num_clustb):
     plt.errorbar(emR[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
@@ -370,7 +370,7 @@ plt.xlabel('Distance Across Swath [km]')
 plt.ylabel('Optimized $k_{e}$')
 plt.yscale('log')
 
-plt.subplot(2,3,4)
+ax3=plt.subplot(2,3,4)
 for i in range(num_clustb):
     plt.errorbar(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -378,8 +378,18 @@ for i in range(num_clustb):
 plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
 plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel(r'Optimized $\tau_c$')
+plt.ylim((20,90))
+plt.yscale('log')
 
-plt.subplot(2,3,5)
+ax3_2=ax3.twinx()
+ax3_2.set_ylabel(r'Optimized $\Psi_c$')
+ax3_2.set_yscale('log')
+low_psi=(k_e_fix)*(20**1.5)
+hi_psi=(k_e_fix)*(90**1.5)
+ax3_2.set_ylim((low_psi,hi_psi))
+ax3_2.set_ylabel(r'Optimized $\Psi_c$')
+
+ax4=plt.subplot(2,3,5)
 for i in range(num_clustb):
     plt.errorbar(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -387,8 +397,19 @@ for i in range(num_clustb):
 plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
 plt.xlabel('Max Elevation [km]')
 plt.ylabel(r'Optimized $\tau_c$')
+plt.ylim((20,90))
+plt.yscale('log')
 
-plt.subplot(2,3,6)
+ax4_2=ax4.twinx()
+ax4_2.set_ylabel(r'Optimized $\Psi_c$')
+ax4_2.set_yscale('log')
+low_psi=(k_e_fix)*(20**1.5)
+hi_psi=(k_e_fix)*(90**1.5)
+ax4_2.set_ylim((low_psi,hi_psi))
+ax4_2.set_ylabel(r'Optimized $\Psi_c$')
+
+
+ax5=plt.subplot(2,3,6)
 for i in range(num_clustb):
     plt.errorbar(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -396,8 +417,55 @@ for i in range(num_clustb):
 plt.axhline(np.median(tau_c_optim),c='k',linestyle=':')
 plt.xlabel('Distance Across Swath [km]')
 plt.ylabel(r'Optimized $\tau_c$')
+plt.ylim((20,90))
+plt.yscale('log')
+
+ax5_2=ax5.twinx()
+ax5_2.set_ylabel(r'Optimized $\Psi_c$')
+ax5_2.set_yscale('log')
+low_psi=(k_e_fix)*(20**1.5)
+hi_psi=(k_e_fix)*(90**1.5)
+ax5_2.set_ylim((low_psi,hi_psi))
+ax5_2.set_ylabel(r'Optimized $\Psi_c$')
+
+######
+f4a=plt.figure(num=10,figsize=(15,5))
+
+ax1=plt.subplot(1,2,1)
+for i in range(num_clustb):
+    plt.errorbar(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
+    plt.scatter(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
+    plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
+plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
+plt.xlabel('Distance Across Swath [km]')
+plt.ylabel('Optimized $k_{e}$')
+plt.yscale('log')
+plt.ylim((10**-13,10**-7))
+
+ax1r=ax1.twinx()
+ax1r.set_ylim(((10**-13)*(tau_c_fix**1.5),(10**-7)*(tau_c_fix**1.5)))
+ax1r.set_yscale('log')
+ax1r.set_ylabel(r'Optimized $\Psi_c$')
+
+ax2=plt.subplot(1,2,2)
+plt.xlabel('Distance Across Swath [km]')
+low_psi=(k_e_fix)*(20**1.5)
+hi_psi=(k_e_fix)*(90**1.5)
+plt.ylim((low_psi,hi_psi))
+plt.yscale('log')
+
+ax2r=ax2.twinx()
+ax2r.set_yscale('log')
+ax2r.set_ylim((20,90))
+ax2r.set_ylabel(r'Optimized $\tau_c$')
+for i in range(num_clustb):
+    ax2r.errorbar(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
+    ax2r.scatter(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
+    ax2r.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
+ax2r.axhline(np.median(tau_c_optim),c='k',linestyle=':')
 
 # f2.savefig('cluster_class.pdf')
 # f3.savefig('cluster_ksn_e.pdf')
 # f3a.savefig('cluster_ksn_e.tif',dpi=300)
-f4.savefig('cluster_ke.pdf')
+# f4.savefig('cluster_ke.pdf')
+# f4a.savefig('cluster_ke2.pdf')
