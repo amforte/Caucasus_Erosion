@@ -198,4 +198,4 @@ for i in range(4):
     ax.axvline(243,c='k',linewidth=0.5,linestyle='--')
     ax.axvline(334,c='k',linewidth=0.5,linestyle='--') 
     
-   
+# f4.savefig('Full_GRDC_TimeSeries.pdf')   

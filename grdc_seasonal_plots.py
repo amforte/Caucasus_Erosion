@@ -529,57 +529,103 @@ axr3.set_ylabel('Seasonal Snow STD')
 # ax3.set_xlabel('Shape') 
 # ax4.set_xlabel('Mean Runoff [mm/day]')
 
-# ## Figure 9
-# f9=plt.figure(num=9,figsize=(15,15))
-# ax1=plt.subplot(2,2,1)
-# ax2=plt.subplot(2,2,2)
-# ax3=plt.subplot(2,2,3)
-# ax4=plt.subplot(2,2,4)
+## Figure 9
+f9=plt.figure(num=9,figsize=(15,20))
+ax1=plt.subplot(3,2,1)
+ax2=plt.subplot(3,2,2)
+ax3=plt.subplot(3,2,3)
+ax4=plt.subplot(3,2,4)
+ax5=plt.subplot(3,2,5)
+ax6=plt.subplot(3,2,6)
 
-# for i in range(4):
-#     idx=cluster==i
-#     idOI=grdc_id[idx]
-#     for j in range(len(idOI)):
-#         fn='data_tables/grdc_daily_means/grdc_'+str(idOI[j])+'_mean_daily.csv'
-#         bdf=pd.read_csv(fn)
-#         dn=bdf['day_number'].to_numpy()
-#         mnR=bdf['grdc_smoothed_mean_daily_runoff_mm_day'].to_numpy()
-#         # Find peak in runoff
-#         rmax=np.argmax(mnR)
-#         rdn=dn[rmax]
-#         # Determine seasons
-#         if np.logical_or(rdn<=59,rdn>334):
-#             # DJF
-#             ax1.scatter(c[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
-#             ax2.scatter(c[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
-#             ax3.scatter(c[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
-#             ax4.scatter(mR[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
-#         elif np.logical_and(rdn>59,rdn<=151):
-#             # MAM
-#             ax1.scatter(c[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
-#             ax2.scatter(c[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
-#             ax3.scatter(c[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
-#             ax4.scatter(mR[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
-#         elif np.logical_and(rdn>151,rdn<=243):
-#             # JJA
-#             ax1.scatter(c[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
-#             ax2.scatter(c[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
-#             ax3.scatter(c[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
-#             ax4.scatter(mR[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
-#         elif np.logical_and(rdn>243,rdn<=334):
-#             # SON
-#             ax1.scatter(c[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')
-#             ax2.scatter(c[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')
-#             ax3.scatter(c[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')
-#             ax4.scatter(mR[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')                       
-# ax1.set_ylabel('Annual Fraction')
-# ax2.set_ylabel('Seasonal Fraction')
-# ax3.set_ylabel('Event Fraction')
-# ax4.set_ylabel('Seasonal Fraction') 
-# ax1.set_xlabel('Shape')        
-# ax2.set_xlabel('Shape')       
-# ax3.set_xlabel('Shape') 
-# ax4.set_xlabel('Mean Runoff [mm/day]')
+for i in range(4):
+    idx=cluster==i
+    idOI=grdc_id[idx]
+    for j in range(len(idOI)):
+        fn='data_tables/grdc_daily_means/grdc_'+str(idOI[j])+'_mean_daily.csv'
+        bdf=pd.read_csv(fn)
+        dn=bdf['day_number'].to_numpy()
+        mnR=bdf['grdc_smoothed_mean_daily_runoff_mm_day'].to_numpy()
+        # Find peak in runoff
+        rmax=np.argmax(mnR)
+        rdn=dn[rmax]
+        # Determine seasons
+        if np.logical_or(rdn<=59,rdn>334):
+            # DJF
+            ax1.scatter(c[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
+            ax3.scatter(c[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
+            ax5.scatter(c[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
+            ax2.scatter(s[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
+            ax4.scatter(s[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
+            ax6.scatter(s[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='o')
+        elif np.logical_and(rdn>59,rdn<=151):
+            # MAM
+            ax1.scatter(c[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
+            ax3.scatter(c[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
+            ax5.scatter(c[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
+            ax2.scatter(s[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
+            ax4.scatter(s[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
+            ax6.scatter(s[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='^')
+        elif np.logical_and(rdn>151,rdn<=243):
+            # JJA
+            ax1.scatter(c[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
+            ax3.scatter(c[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
+            ax5.scatter(c[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
+            ax2.scatter(s[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
+            ax4.scatter(s[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
+            ax6.scatter(s[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='s')
+        elif np.logical_and(rdn>243,rdn<=334):
+            # SON
+            ax1.scatter(c[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')
+            ax3.scatter(c[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')
+            ax5.scatter(c[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')
+            ax2.scatter(s[idx][j],anu_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')
+            ax4.scatter(s[idx][j],ssn_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')
+            ax6.scatter(s[idx][j],evnt_frac[idx][j],s=mz[idx][j]*25,c=color_list[i],edgecolors='k',marker='D')                      
+ax1.set_ylabel('Annual Fraction')
+ax2.set_ylabel('Annual Fraction')
+ax3.set_ylabel('Seasonal Fraction')
+ax4.set_ylabel('Seasonal Fraction') 
+ax5.set_ylabel('Event Fraction')
+ax6.set_ylabel('Event Fraction')
+
+ax1.set_xlabel('Shape')        
+ax3.set_xlabel('Shape')       
+ax5.set_xlabel('Shape') 
+ax2.set_xlabel('Scale')
+ax4.set_xlabel('Scale')
+ax6.set_xlabel('Scale')
+
+
+ax4.scatter(0.8,0.15,s=5*25,c='k')
+ax4.scatter(0.8,0.12,s=4*25,c='k')
+ax4.scatter(0.8,0.09,s=3*25,c='k')
+ax4.scatter(0.8,0.06,s=2*25,c='k')
+ax4.scatter(0.8,0.03,s=1*25,c='k')
+ax4.text(0.9,0.15,'5 km')
+ax4.text(0.9,0.12,'4 km')
+ax4.text(0.9,0.09,'3 km')
+ax4.text(0.9,0.06,'2 km')
+ax4.text(0.9,0.03,'1 km')
+ax4.text(0.9,0.18,'Max Elev.')
+
+ax4.scatter(1.1,0.15,s=3*25,marker='o',c='k')
+ax4.scatter(1.1,0.12,s=3*25,marker='^',c='k')
+ax4.scatter(1.1,0.09,s=3*25,marker='s',c='k')
+ax4.scatter(1.1,0.06,s=3*25,marker='D',c='k')
+ax4.text(1.2,0.15,'DJF')
+ax4.text(1.2,0.12,'MAM')
+ax4.text(1.2,0.09,'JJA')
+ax4.text(1.2,0.06,'SON')
+ax4.text(1.2,0.18,'Peak Runoff Season')
+
+ax4.scatter(0.4,0.06,s=3*25,c='k')
+ax4.scatter(0.4,0.03,s=3*25,c='w',edgecolors='k')
+ax2.text(0.45,0.06,'In GC')
+ax4.text(0.45,0.03,'Outside GC')
+ax4.text(0.35,0.09,'Position')
+
+f9.savefig('fractions.pdf')
 
 # ## FIgure 10
 # f10=plt.figure(num=10,figsize=(15,15))

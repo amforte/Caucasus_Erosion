@@ -256,6 +256,62 @@ for i in range(N):
         plt.figure(i+1,figsize=(20,10)) 
         # Mean Runoff
         plt.subplot(3,2,1)
+        plt.title('Basin '+str3+'; Mean R = '+str(np.round(np.mean(R),1))+'; R2yr = '+str(np.round(targ_obs[i,0],1))+'; i='+str(i))
+        plt.axhline(np.mean(R),c='r',linestyle='--',label='Observed Mean Runoff')
+        plt.axhline(np.mean(R)*whole_fits[i,2],c='k',linestyle='-',label='Whole Fit Implied Runoff')
+        for j in range(nt):
+            plt.scatter(Nta[i,j],np.mean(R)*mnt[i,j],c='k',s=20)
+        plt.scatter(Nta[i,ix],np.mean(R)*mnt[i,ix],c='b',s=60,zorder=3,label='Minimum')
+        plt.ylabel('Runoff [mm/day]')
+        plt.legend(loc='best')
+        plt.xlim((0,250))
+        # Shape Parameter
+        plt.subplot(3,2,3)
+        plt.axhline(whole_fits[i,0],c='k',linestyle='-',label='Whole Fit c')
+        for j in range(nt):
+            plt.scatter(Nta[i,j],ct[i,j],c='k',s=20)
+        plt.scatter(Nta[i,ix],ct[i,ix],c='b',s=60,zorder=3,label='Minimum')     
+        plt.ylabel('Shape Parameter')
+        plt.legend(loc='best')
+        plt.xlim((0,250))
+        # Tail Statistics
+        plt.subplot(3,2,5)
+        if tail_method=='MSS':
+            for j in range(nt):
+                plt.scatter(Nta[i,j],res[i,j],c='k',s=20)
+            plt.scatter(Nta[i,ix],res[i,ix],c='b',s=60,zorder=3)    
+            plt.xlabel('Events Per Year')
+            plt.ylabel('Tail MSS')
+            plt.xlim((0,250))
+        elif tail_method=='RETURN':
+            plt.axhline(targ_obs[i,0],c='r',linestyle='--',
+                        label='Observed '+str(return_interval)+' Year Runoff')
+            plt.axhline(targ_whole[i,0],c='k',linestyle='-',
+                       label='Whole Fit '+str(return_interval)+' Year Runoff')
+            for j in range(nt):
+                plt.scatter(Nta[i,j],RRt[i,j],c='k',s=20)
+            plt.scatter(Nta[i,ix],RRt[i,ix],c='b',s=60,zorder=3,label='Minimum')    
+            plt.xlabel('Events Per Year')
+            plt.ylabel('Tail RMSE')
+            plt.xlim((0,250))  
+            plt.legend(loc='best')
+        # Exceedance Frequency (Survival Function)
+        plt.subplot(1,2,2)
+        if tail_method=='RETURN':
+            plt.axhline(targ_return,c='k',linestyle=':',label='Return Flood Used For Tail Minimization')
+        plt.scatter(Qstar_sort,Q_freq_excd,label='Observations',c='r')
+        plt.plot(Qstar_sort,weibull_min.sf(Qstar_sort,c,loc=l,scale=s),label='Whole Fit',c='k')
+        plt.plot(Qstar_sort,weibull_min.sf(Qstar_sort,ct[i,ix],loc=0,scale=st[i,ix]),label='Minimum',c='b')
+        plt.legend(loc='best')
+        plt.xscale('log')
+        plt.yscale('log')
+        plt.xlabel('Q*')
+        plt.ylim((10**-4,1))
+        plt.xlim((10**-2,10**2))
+    if i==4:
+        fout2=plt.figure(N+2,figsize=(20,10)) # Represenative sample
+        # Mean Runoff
+        plt.subplot(3,2,1)
         plt.title('Basin '+str3+'; Mean R = '+str(np.round(np.mean(R),1))+'; R2yr = '+str(np.round(targ_obs[i,0],1)))
         plt.axhline(np.mean(R),c='r',linestyle='--',label='Observed Mean Runoff')
         plt.axhline(np.mean(R)*whole_fits[i,2],c='k',linestyle='-',label='Whole Fit Implied Runoff')
@@ -322,7 +378,7 @@ ax1.tick_params(direction='in',which='both')
 plt.plot(np.arange(0,8,1),np.arange(0,8,1),c='k',linestyle='--')
 plt.plot(np.arange(0,8,1),np.arange(0,8,1)-1,c='k',linestyle=':')
 sc1=plt.scatter(mnR,mnt_best*mnR,s=40,c=ct_best,label='Minimum',norm=cnorm,cmap=cm.lapaz)
-# plt.scatter(mnR,whole_fits[:,2]*np.ravel(mnR),s=20,c='k',label='Whole Fit')
+# plt.scatter(mnR,whole_fits[:,2]*np.ravel(mnR),s=20,c='w',edgecolors='k',label='Whole Fit')
 plt.xlabel('Observed Mean Runoff [mm/day]')
 plt.ylabel('Implied Mean Runoff [mm/day]') 
 # plt.legend(loc='best')
@@ -338,7 +394,7 @@ plt.plot(np.arange(0,100,5),np.arange(0,100,5),c='k',linestyle='--')
 plt.plot(np.arange(0,100,5),np.arange(0,100,5)-10,c='k',linestyle=':')
 plt.plot(np.arange(0,100,5),np.arange(0,100,5)-20,c='k',linestyle=':')
 sc2=plt.scatter(targ_obs,targ_best,s=40,c=ct_best,label='Minimum',norm=cnorm,cmap=cm.lapaz)
-# plt.scatter(targ_obs,targ_whole,s=20,c='k',label='Whole Fit')
+# plt.scatter(targ_obs,targ_whole,s=20,c='w',edgecolors='k',label='Whole Fit')
 plt.xlabel('Observed 2 yr Return Runoff [mm/day]')
 plt.ylabel('Implied 2 yr Return Runoff [mm/day]')
 plt.xlim((0,85))
@@ -352,15 +408,9 @@ cbar2.ax.set_ylabel('Shape Parameter')
 #
 ax3=plt.subplot(1,3,3)
 ax3.tick_params(direction='in',which='both')
-st_error=np.transpose(st_best_ci)
-st_error[0,:]=np.transpose(st_best)-st_error[0,:]
-st_error[1,:]=st_error[1,:]-np.transpose(st_best)
-ct_error=np.transpose(ct_best_ci)
-ct_error[0,:]=np.transpose(ct_best)-ct_error[0,:]
-ct_error[1,:]=np.transpose(ct_best)-ct_error[1,:]
 plt.errorbar(st_best,ct_best,yerr=np.ravel(ct_best_std),xerr=np.ravel(st_best_std),ecolor='k',linestyle='',elinewidth=0.5)
 sc3=plt.scatter(st_best,ct_best,c=np.log10(Nta_best),s=40,norm=nnorm,cmap=cm.tofino,zorder=2)
-# plt.scatter(whole_fits[:,1],whole_fits[:,0],c='k',s=20)
+# plt.scatter(whole_fits[:,1],whole_fits[:,0],c='w',edgecolors='k',s=20)
 plt.ylabel('Shape Parameter')
 plt.xlabel('Scale Parameter')
 plt.xlim((0,1.5))
@@ -369,8 +419,8 @@ plt.ylim((0.25,1.75))
 cbar3=plt.colorbar(sc3,ax=ax3)
 cbar3.ax.set_ylabel('Log Threshold [Events/Year]')
 #
-fout.savefig('distribution_fits.pdf')
-
+# fout.savefig('distribution_fits.pdf')
+# fout2.savefig('fit_method_example.pdf')
 
 # Package output
 # Sort arrays by GRDC ID to match other tables

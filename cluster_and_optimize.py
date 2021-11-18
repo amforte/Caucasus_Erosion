@@ -252,10 +252,10 @@ k_e_optim=np.zeros((len(e),5))
 tau_c_optim=np.zeros((len(e),5)) 
 for i in range(len(e)):
     [k_e_optim[i,0],k_e_optim[i,1],
-     k_e_optim[i,2],k_e_optim[i,3],
-     k_e_optim[i,4]]=min_k_e_optim(ksn[i],ksnu[i],e[i],eu[i],emR[i],
-                                   cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],
-                                   num_iterations,5)   
+      k_e_optim[i,2],k_e_optim[i,3],
+      k_e_optim[i,4]]=min_k_e_optim(ksn[i],ksnu[i],e[i],eu[i],emR[i],
+                                    cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],
+                                    num_iterations,5)   
     
 k_e_o=np.zeros((num_clustb))
 for i in range(num_clustb):
@@ -264,10 +264,10 @@ k_e_fix=np.median(k_e_optim)
 
 for i in range(len(e)):    
     [tau_c_optim[i,0],tau_c_optim[i,1],
-     tau_c_optim[i,2],tau_c_optim[i,3],
-     tau_c_optim[i,4]]=min_tau_c_optim(k_e_fix,ksn[i],ksnu[i],e[i],eu[i],emR[i],
-                                       cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],
-                                       num_iterations,5)
+      tau_c_optim[i,2],tau_c_optim[i,3],
+      tau_c_optim[i,4]]=min_tau_c_optim(k_e_fix,ksn[i],ksnu[i],e[i],eu[i],emR[i],
+                                        cmb[eidx[i].astype(int)],smb[eidx[i].astype(int)],
+                                        num_iterations,5)
 
 tau_c_o=np.zeros((num_clustb))
 for i in range(num_clustb):
@@ -281,17 +281,17 @@ clustdf=pd.DataFrame(data,columns=['grdc_id','cluster'])
 clustdf.to_csv('result_tables/grdc_basin_clusters.csv',index=False)
 
 clustmdata=np.concatenate((clust_num.reshape((len(clust_num),1)),
-                     cb_pop.reshape((len(cb_pop),1)),
-                     sb_pop.reshape((len(sb_pop),1)),
-                     mR_pop.reshape((len(mR_pop),1)),
-                     cmb.reshape((len(cmb),1)),
-                     smb.reshape((len(smb),1)),
-                     k_e_o.reshape((len(k_e_o),1)),
-                     tau_c_o.reshape((len(tau_c_o),1))),axis=1)
+                      cb_pop.reshape((len(cb_pop),1)),
+                      sb_pop.reshape((len(sb_pop),1)),
+                      mR_pop.reshape((len(mR_pop),1)),
+                      cmb.reshape((len(cmb),1)),
+                      smb.reshape((len(smb),1)),
+                      k_e_o.reshape((len(k_e_o),1)),
+                      tau_c_o.reshape((len(tau_c_o),1))),axis=1)
 clustmdf=pd.DataFrame(clustmdata,columns=['cluster','c_mean','s_mean','r_mean','c_aggr','s_aggr','k_e','tau_c'])
 clustmdf.to_csv('result_tables/grdc_mean_clusters.csv',index=False)
     
 out_data=np.concatenate((eidx.reshape((len(eidx),1)),k_e_optim,tau_c_optim),axis=1)
 dfout=pd.DataFrame(out_data,columns=['cluster','k_e_mean','k_e_median','k_e_std','k_e_q25','k_e_q75',
-                                     'tau_c_mean','tau_c_median','tau_c_std','tau_c_q25','tau_c_q75'])
+                                      'tau_c_mean','tau_c_median','tau_c_std','tau_c_q25','tau_c_q75'])
 dfout.to_csv('result_tables/optimized_ero_k_e_tau_c.csv',index=False)
