@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Analysis of width, discharge, and drainage area scaling relationships in
+ungagued, 10Be basins in the Greater Caucasus. Main goal is is to assess an 
+appropriate value the k_w parameter.
+
 Written by Adam M. Forte for 
-Low runoff variability driven by a dominance of snowmelt inhibits clear coupling of climate, tectonics, and topography in the Greater Caucasus Mountains
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
 
 If you use this code or derivatives, please cite the original paper.
 """
@@ -39,7 +44,6 @@ f2ax1=plt.subplot(2,3,1)
 f2ax2=plt.subplot(2,3,2)
 f2ax3=plt.subplot(2,3,3)
 f2ax4=plt.subplot(2,1,2)
-
 
 da_l=[]
 w_l=[]
@@ -129,8 +133,6 @@ ax4.set_xscale('log')
 ax4.set_yscale('log')
 ax4.set_xlabel('Binned Drainage Area [$km^2$]')
 ax4.set_ylabel('Smoothed (1 km) Width [m]')   
-
-
 
 
 ## REBUTAL FIGURE

@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Broad check as to whether topography (as either ksn or gradient) or erosion
+rate is correlated with a wide array of climatic or lithologic factors.
+
 Written by Adam M. Forte for 
-Low runoff variability driven by a dominance of snowmelt inhibits clear coupling of climate, tectonics, and topography in the Greater Caucasus Mountains
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
 
 If you use this code or derivatives, please cite the original paper.
 """

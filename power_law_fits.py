@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Implementation of two different routines (bootstrap and monte-carlo) for 
+fitting a simple power law to noisy ksn-E data.
+
 Written by Adam M. Forte for 
-Low runoff variability driven by a dominance of snowmelt inhibits clear coupling of climate, tectonics, and topography in the Greater Caucasus Mountains
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
 
 If you use this code or derivatives, please cite the original paper.
 """

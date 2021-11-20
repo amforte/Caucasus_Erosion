@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """
+Plots the event, seasonal, and annual fraction vs a variety of other metrics.
+
 Written by Adam M. Forte for 
-Low runoff variability driven by a dominance of snowmelt inhibits clear coupling of climate, tectonics, and topography in the Greater Caucasus Mountains
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
 
 If you use this code or derivatives, please cite the original paper.
 """

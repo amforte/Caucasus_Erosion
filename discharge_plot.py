@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Nov 16 08:02:26 2021
+Plots exceedance frequency and the relationships between discharge and drainage 
+area for gauged basins
 
-@author: aforte
+Written by Adam M. Forte for 
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
+
+If you use this code or derivatives, please cite the original paper.
 """
 
 import pandas as pd

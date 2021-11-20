@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 19 13:38:39 2021
+Plots the Budyko relationship (Aridity Index vs ET Ratio) for the gauged basins
+used in the analysis. PET comes from global dataset from CGIAR-CSI. Also included
+is an assesment of whether the method used for estimating runoff in ungauged
+basins (as implemented in 'estimate_runoff.py') is consistent with the
+Budyko framework.
 
-@author: aforte
+Written by Adam M. Forte for 
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
+
+If you use this code or derivatives, please cite the original paper.
 """
 import pandas as pd
 import numpy as np

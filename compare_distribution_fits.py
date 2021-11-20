@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 12 14:53:49 2021
+Compares results of different methods of fitting the runoff distributions, both
+in terms of how they fit the runoff distributions, but also the implications for
+the projected ksn-E relationship using the optimized k_e from the analysis.
 
-@author: aforte
+Written by Adam M. Forte for 
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
+
+If you use this code or derivatives, please cite the original paper.
 """
 import pandas as pd
 import numpy as np

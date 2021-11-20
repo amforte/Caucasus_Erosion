@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Nov 14 14:17:09 2021
+Plots results of cluster and optimization routine performed in 
+'cluster_and_optimize.py'
 
-@author: amforte
+Written by Adam M. Forte for 
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
+
+If you use this code or derivatives, please cite the original paper.
 """
 import pandas as pd
 import numpy as np

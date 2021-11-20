@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Implementation of numerical intergration of the stochastic threshold incision
+model with either an inverse-gamma or Weibull distribution for the flood pdf.
+
 Written by Adam M. Forte for 
-Low runoff variability driven by a dominance of snowmelt inhibits clear coupling of climate, tectonics, and topography in the Greater Caucasus Mountains
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
 
 If you use this code or derivatives, please cite the original paper.
 """
@@ -11,6 +15,7 @@ import numpy as np
 import scipy.integrate as integrate
 from scipy.special import gamma
 from scipy.special import gammainc
+from scipy.stats import weibull_min
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
@@ -99,7 +104,7 @@ def wbl(Q_star,k,sc):
     return pdf
 
 def ccdf_gamma(Q_star,k):
-    cdf=gammainc(k/Q_star,k+1)
+    cdf=gammainc(k+1,k/Q_star)
     return cdf
 
 def ero_integrand(Ks,Q_star,k,con_list):
@@ -166,42 +171,60 @@ def stim_range(k,con_list,sc=-1,max_ksn=700,num_points=200,space_type='log'):
 
 def phi_est(k,con_list):
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
-     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c]=unpack_constants(con_list)
-    phi=(alpha*(1-omega_s))/(beta*(1+k)) 
-    return phi
+     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)
+    if dist_type=='weibull':
+        print('Phi estimation is not defined for a Weibull shape parameter')
+    else:      
+        phi=(alpha*(1-omega_s))/(beta*(1+k)) 
+        return phi
 
 def ret_time(k,E,Ks,con_list):
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
-     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c]=unpack_constants(con_list)
-    [Em,Em_err,Q_starc]=stim_one(Ks,k,con_list)
-    tr=(((k+1)*gamma(k+1))/k**(k+1))*Q_starc**(1+k)
-    # tr=gammainc(k/Q_starc,k+1)**-1
-    # Convert to meters per second
-    I=E/(1e6*365.25*24*60*60)
-    erat=I/Psi_c
-    return [tr,erat]
+     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)
+    if dist_type=='weibull':
+        print('Return time estimation is not defined for a Weibull shape parameter')
+    else:
+        [Em,Em_err,Q_starc]=stim_one(Ks,k,con_list)
+        tr=(((k+1)*gamma(k+1))/k**(k+1))*Q_starc**(1+k)
+        # tr=gammainc(k/Q_starc,k+1)**-1
+        # Convert to meters per second
+        I=E/(1e6*365.25*24*60*60)
+        erat=I/Psi_c
+        return [tr,erat]
 
 def plot_all(k,Rb,k_e,k_w=15,f=0.08313,omega_a=0.50,
              omega_s=0.25,alpha=2/3,beta=2/3,a=1.5,tau_c=45,
-             max_ksn=700,num_points=200):
+             max_ksn=700,num_points=200,dist_type='inv_gamma',sc=-1):
     cL=set_constants(Rb,k_e,k_w=k_w,f=f,omega_a=omega_a,
                      omega_s=omega_s,alpha=alpha,beta=beta,
-                     a=a,tau_c=tau_c)
-    [Ks,E,E_err,Q_starc]=stim_range(k,cL,max_ksn=max_ksn,num_points=num_points)
-    Ks_annoT=an_const(E,k,cL)
-    Ks_anT=an_thresh(E,k,cL)
-    # Plot
-    plt.figure(figsize=(10,10))
-    plt.plot(E,Ks,c='black',linewidth=2,label='Numerical Solution')
-    plt.plot(E,Ks_annoT,c='black',linewidth=2,linestyle='--',label='Constant Discharge')
-    plt.plot(E,Ks_anT,c='black',linewidth=2,linestyle=':',label='Analytical with Threshold')
-    plt.xlabel('Erosion Rate [m/Myr]')
-    plt.ylabel('$k_{sn}$')
-    plt.title('k={:.2f}'.format(k)+'; R={:.2f}'.format(Rb)+
-              '; $k_e$={:.2e}'.format(k_e)+r'; $\tau_{c}$'+'={:.2f}'.format(tau_c))
-    plt.legend(loc='lower right')    
+                     a=a,tau_c=tau_c,dist_type=dist_type)
+    if dist_type=='inv_gamma':
+        [Ks,E,E_err,Q_starc]=stim_range(k,cL,max_ksn=max_ksn,num_points=num_points)
+        Ks_annoT=an_const(E,k,cL)
+        Ks_anT=an_thresh(E,k,cL)
+        # Plot
+        plt.figure(figsize=(10,10))
+        plt.plot(E,Ks,c='black',linewidth=2,label='Numerical Solution')
+        plt.plot(E,Ks_annoT,c='black',linewidth=2,linestyle='--',label='Constant Discharge')
+        plt.plot(E,Ks_anT,c='black',linewidth=2,linestyle=':',label='Analytical with Threshold')
+        plt.xlabel('Erosion Rate [m/Myr]')
+        plt.ylabel('$k_{sn}$')
+        plt.title('k={:.2f}'.format(k)+'; R={:.2f}'.format(Rb)+
+                  '; $k_e$={:.2e}'.format(k_e)+r'; $\tau_{c}$'+'={:.2f}'.format(tau_c))
+        plt.legend(loc='lower right')
+    else:
+        [Ks,E,E_err,Q_starc]=stim_range(k,cL,max_ksn=max_ksn,num_points=num_points,sc=sc)
+        # Plot
+        plt.figure(figsize=(10,10))
+        plt.plot(E,Ks,c='black',linewidth=2,label='Numerical Solution')
+        plt.xlabel('Erosion Rate [m/Myr]')
+        plt.ylabel('$k_{sn}$')
+        plt.title('c={:.2f}'.format(k)+'; X_0={:.2f}'.format(sc)+'; R={:.2f}'.format(Rb)+
+                  '; $k_e$={:.2e}'.format(k_e)+r'; $\tau_{c}$'+'={:.2f}'.format(tau_c))
+        plt.legend(loc='lower right')        
     
-def plot_dists(min_k=0.5,max_k=6,k_num=10,lower_Q_star=0.01,upper_Q_star=100):
+def plot_dist_range(min_k=0.5,max_k=6,k_num=10,lower_Q_star=0.1,upper_Q_star=50,
+               dist_type='inv_gamma',mnR=1,min_sc=0.5,max_sc=2,fix_sc=None):
     Q_star_r=np.logspace(np.log10(lower_Q_star),np.log10(upper_Q_star),100)
     k_r=np.linspace(min_k,max_k,k_num)
         
@@ -214,29 +237,41 @@ def plot_dists(min_k=0.5,max_k=6,k_num=10,lower_Q_star=0.01,upper_Q_star=100):
     
     ax2=plt.subplot(3,1,2)
     ax2.set_xscale('log')
+    ax2.set_yscale('log')
     ax2.set_xlabel('Q*')
-    ax2.set_ylabel('Cdf(Q*)')
+    ax2.set_ylabel('N(Q*)')
 
     ax3=plt.subplot(3,1,3)
-    ax3.set_xscale('log')
     ax3.set_yscale('log')
-    ax3.set_xlabel('Q*')
-    ax3.set_ylabel('N(Q*)') 
+    ax3.set_xlabel('R [mm/day]')
+    ax3.set_ylabel('N(R)') 
    
     cols=cm.get_cmap('plasma',len(k_r))
-    
     min_prob=np.zeros(len(k_r))
-    for i in range(len(k_r)):
-        
-        pdf=inv_gamma(Q_star_r,k_r[i])
-        cdf=ccdf_gamma(Q_star_r,k_r[i])
-        ax1.plot(Q_star_r,pdf,c=np.array(cols(i)))
-        ax2.plot(Q_star_r,cdf,c=np.array(cols(i)))
-        ax3.plot(Q_star_r,1-cdf,c=np.array(cols(i)),label='k={:2.1f}'.format(k_r[i]))
-        min_prob[i]=pdf[-1]
-
+    
+    if dist_type=='inv_gamma':
+        for i in range(len(k_r)):
+            
+            pdf=inv_gamma(Q_star_r,k_r[i])
+            cdf=ccdf_gamma(Q_star_r,k_r[i])
+            ax1.plot(Q_star_r,pdf,c=np.array(cols(i)))
+            ax2.plot(Q_star_r,cdf,c=np.array(cols(i)))
+            ax3.plot(Q_star_r*mnR,cdf,c=np.array(cols(i)),label='k={:2.1f}'.format(k_r[i]))
+            min_prob[i]=pdf[-1]
+    else:
+        if fix_sc==None:
+            sc_r=np.linspace(min_sc,max_sc,k_num)
+        else:
+            sc_r=np.ones((k_num))*fix_sc
+        for i in range(len(k_r)):
+            
+            pdf=weibull_min.pdf(Q_star_r,k_r[i],loc=0,scale=sc_r[i])
+            cdf=weibull_min.sf(Q_star_r,k_r[i],loc=0,scale=sc_r[i])
+            ax1.plot(Q_star_r,pdf,c=np.array(cols(i)))
+            ax2.plot(Q_star_r,cdf,c=np.array(cols(i)))
+            ax3.plot(Q_star_r*mnR,cdf,c=np.array(cols(i)),label='c={:2.1f}'.format(k_r[i])+'; X_0={:2.1f}'.format(sc_r[i]))
+            min_prob[i]=pdf[-1]
     ax1.set_ylim((np.amin(min_prob),10))
     ax3.legend(loc='best')
     ax3.set_ylim((1/(365*100),1))
     
-

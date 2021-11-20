@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov  5 16:23:20 2021
+Fits runoff distributions from gauged basins through several mechanisms with
+with either a 1 parameter inverse-gamma or 2 parameter Weibull distribution.
 
-@author: amforte
+Written by Adam M. Forte for 
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
+
+If you use this code or derivatives, please cite the original paper.
 """
 
 import pandas as pd

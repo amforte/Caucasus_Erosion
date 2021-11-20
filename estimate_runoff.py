@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Sun Nov 14 08:49:58 2021
+Uses relationship between rainfall and runoff in gauged basins to estimate
+runoff in ungauged basins. Tests the effectiveness of either a power law
+or linear relationship for this purpose.
 
-@author: aforte
+Written by Adam M. Forte for 
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
+
+If you use this code or derivatives, please cite the original paper.
 """
 import pandas as pd
 import numpy as np

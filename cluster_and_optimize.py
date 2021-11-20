@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Nov 10 10:06:48 2021
+Assess the appropriate number of clusters within a k-means framework, using
+mean runoff and the shape parameter as the cluster variables. Performs the 
+k-means cluster analysis, manually classifies the ungauged basins within
+clusters, and then optimizes k_e and tau_c based on the cluster memberships.
 
-@author: aforte
+Written by Adam M. Forte for 
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
+
+If you use this code or derivatives, please cite the original paper.
 """
 
 import pandas as pd

@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Nov 15 06:46:58 2021
+Assesment of whether disagreement within cluster 3 basins could result from 
+mischaracterization of shape and scale parameters.
 
-@author: amforte
+Written by Adam M. Forte for 
+"Low variability runoff inhibits coupling of climate, tectonics, and 
+topography in the Greater Caucasus"
+
+If you use this code or derivatives, please cite the original paper.
 """
 
 import numpy as np
@@ -41,7 +46,6 @@ ksnu=edf['se_ksn'].to_numpy()
 
 tuneR=np.zeros((len(ksn)))
 for i in range(len(ksn)):
-    # args=(k_e_fix,tau_c_fix,ksn[i],e[i],cmb[ecluster_label[i]],smb[ecluster_label[i]])
     args=(k_e_fix,tau_c_fix,ksn[i],e[i],cmb[1],smb[1])
     res=minimize_scalar(min_R,args=args,bounds=[0.1,10],
                         method='bounded',
