@@ -2,6 +2,3 @@ TO UPDATE:
 
 GRDC shapefile
 10Be shapefile
-Excel Tables
-gc_ero_master_table
-ero_TRMM
