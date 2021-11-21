@@ -1,9 +1,12 @@
 # ReadMe #
 [![DOI](https://zenodo.org/badge/350679832.svg)](https://zenodo.org/badge/latestdoi/350679832)
 
-This is the ReadMe for the GitHub repository that contains supplemental data and codes for the in review manuscript "Low variability, snowmelt runoff inhibits coupling of climate, tectonics, and topography in the Greater Caucasus" by Forte et al. submitted to Earth and Planetary Science Letters. Below are brief descriptions of categories of items included in this repository.
+This is the ReadMe for the GitHub repository that contains supplemental data and codes for the in review manuscript "Low variability runoff inhibits coupling of climate, tectonics, and topography in the Greater Caucasus" by Forte et al. submitted to Earth and Planetary Science Letters. Below are brief descriptions of categories of items included in this repository.
 
-Note that this does not include all codes to process some raw data that we either do not have permission to redistribute (e.g., GRDC or ECAD time series) or is impractical to rehost in their entirety (TRMM or MOD10C2 time series). In these cases, we provide the processed values or products.
+Note that this does not include all codes to process some raw data that are impractical to rehost in their entirety (TRMM or MOD10C2 time series). In these cases, we provide the processed values or products.
+
+## Environment
+Included is an "environment.yaml" file usable within conda including all the dependencies necessary to run the codes in this repository.
 
 ## Supplemental Methods and Figures
 A pdf of the supplemental methods and figures referenced in the main text of the manuscript. An identical version is submitted with the in review manuscript as supplementary material.
@@ -12,36 +15,40 @@ A pdf of the supplemental methods and figures referenced in the main text of the
 A pdf describing the compilation of geologic maps to describe the lithology of each catchment. Included in this are lithologic maps and distributions for each sampled catchment.
 
 ## Excel Tables
-Four excel supplemental tables referenced in the main text of the manuscript. Identical versions are submitted with the in review manuscript as supplementary material.
+Three excel supplemental tables referenced in the main text of the manuscript. Identical versions are submitted with the in review manuscript as supplementary material.
 
 ## Codes
 We provide a series of analysis or plotting codes written in Python v.3.7 for some of the more intricate analyses described in the main text methods or supplement. We also provide some of the scripts for generating various plots in the main paper or  supplement. This is not a complete set of all functions or scripts to generate every figure in the paper, but rather as a way of interpreting the data stored in the data tables. Brief descriptions of each code are provided below.
 ### analyze_widths.py
 Reads and plots results of measuring widths of streams for selected 10Be basins as described in the supplement
+### assess_runoff_mismatch.py
+Code for testing the degree of mismatch in runoff in particular clusters
 ### basic_topo_plots.py
 Reads and plots basics comparisons of erosion rate and channel steepness and gradient, also compares erosion rates to ksn over a range of concavities
-### cluster_analyis.py
-Performs and plots the results of the k-means clustering to break the 10Be basins into different hydro-climatic regions/categories
+### budyko.py
+Plots Budyko relationship for gauged basin and tests whether method for estimating runoff in ungauged basins is consistent with expectations of the Budyko relationship
+### cluster_and_optimize.py
+Performs a k-means clustering to break GRDC basins into different hydro-climatic regions, classifies the ungauged basins within these clusters, and then estimates optimized value of both k_e and tau_c
+### compare_distribution_fits.py
+Compares the results of different algorithms and underlying parametric models for fitting the runoff distributions
 ### correlation_plots.py
 Plots a variety of variables against mean basin ksn, mean basin gradient, and erosion rate and calculates pearson's correlation coefficient for each pair
-### grdc_classify.py
-Classifies GRDC basins based on clusters defined by cluster_analyis.py, note that this is done manually
+### discharge_fit.py
+Functions for fitting discharge distributions.
+### discharge_plot.py
+Generates exceedance frequency plots for the gauged GRDC basins
+### discharge_time_series.py
+Plots smoothed runoff and rainfall time series for the GRDC basins 
 ### grdc_seasonal_plots.py
-Plots the various plots related to the seasonal fraction and daily means
-### optimize_k_e.py
-Performs the optimization to estiamte k_e for every 10Be basin
-### optimize_tau_c.py
-Performs the optimization to estimate tau_c for every 10Be basin (alternative to optimize_k_e.py)
-### optimize_plot_results.py
-Plots the results of both the optimize_k_e.py and optimize_tau_c.py routines
+Generates various plots related to the seasonal fraction and daily means
+### month_trend.py
+Tests whether there is a detectable temporal trend in monthly means within the time series of the GRDC basins
+### plot_cluster_optimize
+Plots the results the cluster_and_optimize routine
 ### power_law_fits.py
 Algorithms for performing the bootstrap and monte-carlo fitting of the power law SPIM ksn - E relationship
-### stim_fit.py
-Calculates a best STIM fit to the data
-### residuals.py 
-Calcuates and plots residuals and RMSE for the various fits to the ksn - E data
 ### stochastic_threshold.py
-Implementation of the stochastic threshold model
+Implementation of the stochastic threshold model, including solutins for both inverse-gamma and weibull distributions
 ### tectonics_plot.py
 Plots some of the plots related to the comparison of the erosion rates with tectonic indicators
 
@@ -49,14 +56,19 @@ Plots some of the plots related to the comparison of the erosion rates with tect
 The "data_tables" folder includes raw data that is called in the various Python codes above and reproduce the data available in the tables provided in the supplement of the text. There are two subfolders within the "data_tables" folder
 ### GRDC Daily Means
 The "grdc_daily_means" folder contains mean daily values, averaged over the length of the record, for the GRDC basins. I.e. there are 365 mean daily values in mm/day where the first value represent the mean daily runoff on January 1 across all years of the record and so on.
+### GRDC Discharge Time Series
+The "grdc_discharge_time_series" folder contains individual time series of discharge and runoff for the GRDC basins used in the analysis
+### GRDC Outlines
+The "grdc_outlines" folder contains lists of coordinates in latitude and longitude defining the edges of the GRDC basins
 ### Width Tables
 The "width_tables" folder contains both raw and moving averaged tables of river width, drainage area, river length, and gradient for the 10Be basins for which we were able to extract width information.
 ### File List
   * chi_r2.csv - chi-elevation R^2 values for all streams and for the trunk streams for each 10Be basin
+  * ero_TRMM.csv - mean rainfall from TRMM for the erosion rate basins
   * filtered_ksn_050.csv - ksn with a reference concavity of 0.5 for the different filter options (lithogically, low, and high elevation, see supplement for discussion). Corresponds to erosion rates for these different scenarios in separate tables, "litho_ero.csv", "low_ero.csv", and "high_ero.csv"
   * gauged_discharges.csv - GRDC discharge data reporting mean discharge (Qb), mean runoff (Rb), the discharge for the 2 year flood (Qbf), and the runoff for the 2 year flood (Rbf), discharge is in m^3/sec and runoff in m/sec
   * gc_ero_master_table.csv - majority of relevant values for 10Be basins
-  * grdc_seasonal_values.csv - seasonal means for GRDC basins and annual, seasonal, and event totals and fractions
+  * grdc_budyko.csv - values related to the budyko framework
   * grdc_summary_values.csv - basic info for the GRDC basins
   * high_ero.csv - erosion rate calculations for the high elevation filtering experiment
   * interpolated_convergence.txt - estimated GC velocity, LC velocity, and GC-LC convergence for 10Be basins
@@ -67,7 +79,7 @@ The "width_tables" folder contains both raw and moving averaged tables of river 
   * width_key.csv - list of river mouth identifying numbers compared to sample names
 
 ## Result Tables
-The "result_tables" folder includes tables output from the analysis codes in the main repository, specifically the "optimize_k_e.py", "optimize_tau_c.py", "power_law_fits.py", and "stim_fit.py". The results here represent the values used in the published paper. If users wish to explore the sensitivity of the results to parameter choices, it is recommended that you store these original results elsewhere as re-running the above codes will overwrite the existing result tables.
+The "result_tables" folder includes tables output from the analysis codes in the main repository. The results here represent the values used in the published paper. If users wish to explore the sensitivity of the results to parameter choices, it is recommended that you store these original results elsewhere as re-running the above codes will overwrite the existing result tables.
 
 ## Rasters
 We include three rasters that are generally not directly downloadable from public databases. All three of these were originally processed for use in Forte et al, 2016, Earth and Planetary Science Letters:
@@ -241,14 +253,6 @@ These are outlines of the GRDC watersheds used for runoff analysis. The attribut
   * Rec_Strt - start date of record
   * Rec_Stop - stop date of record 
   * cluster_num - cluster number from main text
-
-### ECAD Points
-These are the locations of ECAD precipitation stations used to calibrate the TRMM rainfall data. The attribute table for this shapefile includes:
-  * stat_id - Original ECAD station ID
-  * elev_m - elevation of station in m
-  * mm_day - mean preciptation in mm/day
-  * start - start date of the record
-  * xEnd - stop date of the record
 
 ### Individual Basin PolyLines
 For each sampled basin for which an erosion rate is reported, we provide the stream network extracted from the STRM30 dataset. Each shapefile is named 'basin_XXXX_ksn0_5.shp', where XXXX is the sample name and the suffix indicates that it includes ksn values calculated for a reference concavity of 0.5. Each shapefile has the following attributes for each segment:
