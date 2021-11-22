@@ -14,7 +14,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import weibull_min
-
+import matplotlib as mpl
 
 import stochastic_threshold as stim
 
@@ -440,8 +440,8 @@ t_c_u=tau_c_q75-tau_c_optim
 t_c_err=np.concatenate((t_c_l.reshape(1,len(t_c_l)),t_c_u.reshape((1,len(t_c_u)))),axis=0) 
 
 ### FIGURE 4   
-f4=plt.figure(num=6,figsize=(30,15))
-plt.subplot(2,3,1)
+f4=plt.figure(num=6,figsize=(40,15))
+plt.subplot(2,4,1)
 for i in range(num_clustb):
     plt.errorbar(emR[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emR[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -451,7 +451,7 @@ plt.xlabel('Mean Runoff [mm/day]')
 plt.ylabel('Optimized $k_{e}$')
 plt.yscale('log')
 
-plt.subplot(2,3,2)
+plt.subplot(2,4,2)
 for i in range(num_clustb):
     plt.errorbar(emaxZ[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emaxZ[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -461,7 +461,7 @@ plt.xlabel('Max Elevation [km]')
 plt.ylabel('Optimized $k_{e}$')
 plt.yscale('log')
 
-plt.subplot(2,3,3)
+plt.subplot(2,4,3)
 for i in range(num_clustb):
     plt.errorbar(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(eacross[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -471,7 +471,18 @@ plt.xlabel('Distance Across Swath [km]')
 plt.ylabel('Optimized $k_{e}$')
 plt.yscale('log')
 
-ax3=plt.subplot(2,3,4)
+plt.subplot(2,4,4)
+for i in range(num_clustb):
+    plt.errorbar(e[ecluster_label==i],k_e_optim[ecluster_label==i],yerr=k_e_err[:,ecluster_label==i],xerr=eu[ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
+    plt.scatter(e[ecluster_label==i],k_e_optim[ecluster_label==i],c=color_list[i],zorder=1)
+    plt.axhline(k_e_o[i],c=color_list[i],linestyle=':')
+plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
+plt.xlabel('Erosion Rate [m/Myr]')
+plt.ylabel('Optimized $k_{e}$')
+plt.yscale('log')
+plt.xscale('log')
+
+ax3=plt.subplot(2,4,5)
 for i in range(num_clustb):
     plt.errorbar(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emR[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -482,15 +493,15 @@ plt.ylabel(r'Optimized $\tau_c$')
 plt.ylim((20,90))
 plt.yscale('log')
 
-ax3_2=ax3.twinx()
-ax3_2.set_ylabel(r'Optimized $\Psi_c$')
-ax3_2.set_yscale('log')
-low_psi=(k_e_fix)*(20**1.5)
-hi_psi=(k_e_fix)*(90**1.5)
-ax3_2.set_ylim((low_psi,hi_psi))
-ax3_2.set_ylabel(r'Optimized $\Psi_c$')
+# ax3_2=ax3.twinx()
+# ax3_2.set_ylabel(r'Optimized $\Psi_c$')
+# ax3_2.set_yscale('log')
+# low_psi=(k_e_fix)*(20**1.5)
+# hi_psi=(k_e_fix)*(90**1.5)
+# ax3_2.set_ylim((low_psi,hi_psi))
+# ax3_2.set_ylabel(r'Optimized $\Psi_c$')
 
-ax4=plt.subplot(2,3,5)
+ax4=plt.subplot(2,4,6)
 for i in range(num_clustb):
     plt.errorbar(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(emaxZ[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -501,16 +512,16 @@ plt.ylabel(r'Optimized $\tau_c$')
 plt.ylim((20,90))
 plt.yscale('log')
 
-ax4_2=ax4.twinx()
-ax4_2.set_ylabel(r'Optimized $\Psi_c$')
-ax4_2.set_yscale('log')
-low_psi=(k_e_fix)*(20**1.5)
-hi_psi=(k_e_fix)*(90**1.5)
-ax4_2.set_ylim((low_psi,hi_psi))
-ax4_2.set_ylabel(r'Optimized $\Psi_c$')
+# ax4_2=ax4.twinx()
+# ax4_2.set_ylabel(r'Optimized $\Psi_c$')
+# ax4_2.set_yscale('log')
+# low_psi=(k_e_fix)*(20**1.5)
+# hi_psi=(k_e_fix)*(90**1.5)
+# ax4_2.set_ylim((low_psi,hi_psi))
+# ax4_2.set_ylabel(r'Optimized $\Psi_c$')
 
 
-ax5=plt.subplot(2,3,6)
+ax5=plt.subplot(2,4,7)
 for i in range(num_clustb):
     plt.errorbar(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
     plt.scatter(eacross[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
@@ -521,13 +532,33 @@ plt.ylabel(r'Optimized $\tau_c$')
 plt.ylim((20,90))
 plt.yscale('log')
 
-ax5_2=ax5.twinx()
-ax5_2.set_ylabel(r'Optimized $\Psi_c$')
-ax5_2.set_yscale('log')
-low_psi=(k_e_fix)*(20**1.5)
-hi_psi=(k_e_fix)*(90**1.5)
-ax5_2.set_ylim((low_psi,hi_psi))
-ax5_2.set_ylabel(r'Optimized $\Psi_c$')
+# ax5_2=ax5.twinx()
+# ax5_2.set_ylabel(r'Optimized $\Psi_c$')
+# ax5_2.set_yscale('log')
+# low_psi=(k_e_fix)*(20**1.5)
+# hi_psi=(k_e_fix)*(90**1.5)
+# ax5_2.set_ylim((low_psi,hi_psi))
+# ax5_2.set_ylabel(r'Optimized $\Psi_c$')
+
+ax6=plt.subplot(2,4,8)
+for i in range(num_clustb):
+    plt.errorbar(e[ecluster_label==i],tau_c_optim[ecluster_label==i],yerr=t_c_err[:,ecluster_label==i],xerr=eu[ecluster_label==i],ecolor=color_list[i],zorder=0,linestyle='')
+    plt.scatter(e[ecluster_label==i],tau_c_optim[ecluster_label==i],c=color_list[i],zorder=1)
+    plt.axhline(tau_c_o[i],c=color_list[i],linestyle=':')
+plt.axhline(np.median(k_e_optim),c='k',linestyle=':')
+plt.ylim((20,90))
+plt.xlabel('Erosion Rate [m/Myr]')
+plt.ylabel(r'Optimized $\tau_c$')
+plt.yscale('log')
+plt.xscale('log')
+
+# ax6_2=ax6.twinx()
+# ax6_2.set_ylabel(r'Optimized $\Psi_c$')
+# ax6_2.set_yscale('log')
+# low_psi=(k_e_fix)*(20**1.5)
+# hi_psi=(k_e_fix)*(90**1.5)
+# ax6_2.set_ylim((low_psi,hi_psi))
+# ax6_2.set_ylabel(r'Optimized $\Psi_c$')
 
 ### Figure 5 
 f5=plt.figure(num=7,figsize=(15,5))
@@ -587,9 +618,9 @@ ax2r.axhline(tau_c_hi,c='k',linestyle='--')
 ax2r.axhline(tau_c_lo,c='k',linestyle='--')
 
 
+
+
 f6=plt.figure(num=8,figsize=(15,25))
-
-
 ax1=plt.subplot(4,2,1)
 for i in range(num_clustb):
     ax1.errorbar(perc_carb[ecluster_label==i],k_e_optim[ecluster_label==i],
@@ -694,7 +725,23 @@ ax12.set_ylim((20,90))
 ax12.set_xlabel('Percent Igneous-Metamorphic')
 ax12.set_xlim((-5,105))
 
-plt.figure(9,figsize=((10,10)))
+# Kludge around stupid way violinplot sets colors
+mpl.rcParams['axes.prop_cycle']=mpl.cycler(color=color_list)
+
+plt.figure(9,figsize=(20,10))
+ax1=plt.subplot(1,2,1)
+# ax1.set_yscale('log')
+ax1.set_ylabel('Log Optimized $k_{e}$')
+ax1.set_xlabel('Cluster')
+ax2=plt.subplot(1,2,2)
+ax2.set_ylabel(r'Optimized $\tau_c$')
+ax2.set_xlabel('Cluster')
+
+for i in range(num_clustb):
+    ax1.violinplot(np.log10(k_e_optim[ecluster_label==i]),[i+1],showmedians=True,quantiles=[0.25,0.75])
+    ax2.violinplot(tau_c_optim[ecluster_label==i],[i+1],showmedians=True,quantiles=[0.25,0.75])
+
+plt.figure(10,figsize=((10,10)))
 for i in range(num_clustb):
     plt.errorbar(e[ecluster_label==i],ksnq[ecluster_label==i],yerr=ksnqu[ecluster_label==i],xerr=eu[ecluster_label==i],ecolor='gray',linestyle='',zorder=0)
     plt.scatter(e[ecluster_label==i],ksnq[ecluster_label==i],c=color_list[i],s=60,zorder=1)
