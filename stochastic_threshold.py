@@ -4,6 +4,21 @@
 Implementation of numerical intergration of the stochastic threshold incision
 model with either an inverse-gamma or Weibull distribution for the flood pdf.
 
+Note that numerical intergration is performed within the "stim_one" function
+via numerical integration of discrete points that are generated between the
+estimated minimium Qstar and an arbitrarily large Qstar max. In code that is
+commented out, there is an implementation of this intergration where the
+erosion integrand function is numerically intergrated directly, but experimentation
+with various different implementations of methods for integrating functions 
+(e.g., quadrature) within scipy found unstable behavior and extreme sensitivity 
+to the choice of Qstar max. A variety of testing with the alternative 
+simpson numerical integration suggested stable behavior for a log point 
+density > 100 and a Qstar max > 100. Adding more sample points 
+(the implemented version uses 1000) will increase accuracty, but in testing no
+effective difference was found in solutions as long as the point density was 
+greater than ~100 and Qstar max was not extremely large (e.g., 1e6). If you wish
+to increase Qstar max, it is suggested you increase the number of sample points.
+
 Written by Adam M. Forte for 
 "Low variability runoff inhibits coupling of climate, tectonics, and 
 topography in the Greater Caucasus"
@@ -58,33 +73,39 @@ def unpack_constants(con_list):
             tau_c,epsilon,K,Psi_c,dist_type)
 
 def an_thresh(E,k,con_list):
-    # Convert to meters per second
-    I=E/(1e6*365.25*24*60*60)
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
      omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)
-    # Assume return time greater than one day
-    p1=(K**(-1/n))*(k_q**(-m/n))
-    p2_1=(k+1)*(k+1-y)*gamma(k+1)
-    p2_2=(k**(k+1))*y
-    p2=(p2_1/p2_2)**(y/(n*(k+1)))
-    p3=Psi_c**((k+1-y)/(n*(k+1)))
-    p4=I**(y/(n*(k+1)))
-    ks=p1*p2*p3*p4
-    return ks
+    if dist_type=='weibull':
+        raise Exception('Analytical solutions are not available for Weibull distributions')
+    elif dist_type=='inv_gamma':
+        # Convert to meters per second
+        I=E/(1e6*365.25*24*60*60)
+        # Assume return time greater than one day
+        p1=(K**(-1/n))*(k_q**(-m/n))
+        p2_1=(k+1)*(k+1-y)*gamma(k+1)
+        p2_2=(k**(k+1))*y
+        p2=(p2_1/p2_2)**(y/(n*(k+1)))
+        p3=Psi_c**((k+1-y)/(n*(k+1)))
+        p4=I**(y/(n*(k+1)))
+        ks=p1*p2*p3*p4
+        return ks
 
 def an_const(E,k,con_list):
-    # Convert to meters per second
-    I=E/(1e6*365.25*24*60*60)
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
-     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)    
-    # Assume return time greater than one day
-    p1=K**(-1/n)*k_q**(-m/n)
-    p3=(Psi_c+I)**(1/n)
-    p2_1=gamma(k+1)*k**(-y)
-    p2_2=gamma(k+1-y)
-    p2=(p2_1/p2_2)**(1/n)
-    ks=p1*p2*p3
-    return ks    
+     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list) 
+    if dist_type=='weibull':
+        raise Exception('Analytical solutions are not available for Weibull distributions')
+    elif dist_type=='inv_gamma':
+        # Convert to meters per second
+        I=E/(1e6*365.25*24*60*60)
+        # Assume return time greater than one day
+        p1=K**(-1/n)*k_q**(-m/n)
+        p3=(Psi_c+I)**(1/n)
+        p2_1=gamma(k+1)*k**(-y)
+        p2_2=gamma(k+1-y)
+        p2=(p2_1/p2_2)**(1/n)
+        ks=p1*p2*p3
+        return ks    
 
 def ero_law(Ks,Q_star,con_list):
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
@@ -173,7 +194,7 @@ def phi_est(k,con_list):
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
      omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)
     if dist_type=='weibull':
-        print('Phi estimation is not defined for a Weibull shape parameter')
+        raise Exception('Phi estimation is not defined for a Weibull shape parameter')
     else:      
         phi=(alpha*(1-omega_s))/(beta*(1+k)) 
         return phi
@@ -182,7 +203,7 @@ def ret_time(k,E,Ks,con_list):
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
      omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)
     if dist_type=='weibull':
-        print('Return time estimation is not defined for a Weibull shape parameter')
+        raise Exception('Return time estimation is not defined for a Weibull shape parameter')
     else:
         [Em,Em_err,Q_starc]=stim_one(Ks,k,con_list)
         tr=(((k+1)*gamma(k+1))/k**(k+1))*Q_starc**(1+k)
@@ -192,6 +213,36 @@ def ret_time(k,E,Ks,con_list):
         erat=I/Psi_c
         return [tr,erat]
 
+def effective_runoff(k,E,Ks,R,con_list,sc=-1):
+    [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
+     omega_s,alpha,beta,a,tau_c,epsilon,K,Psi_c,dist_type]=unpack_constants(con_list)
+    # Define Qstar range
+    q_min=0.001
+    q_max=10000
+    # Calculate Q_starc
+    Q_starc = ((K/epsilon)*(Ks**n)*(k_q**m))**(-1/y)
+    if Q_starc < q_min:
+        Q_starc = q_min
+    elif Q_starc > q_max:
+        Q_starc = q_max-1     
+    Qstar=np.logspace(np.log10(Q_starc),np.log10(q_max),1000)
+    if dist_type=='inv_gamma':
+        y=ero_integrand(Ks,Qstar,k,con_list)
+    elif dist_type=='weibull':
+        if sc>0:
+            y=ero_integrand_w(Ks,Qstar,k,sc,con_list)
+        else:
+            raise Exception("Valid argument for the scale parameter must be supplied if using Weibull distribution")
+    # Geomorphically effective runoff, i.e., max of ero integrand - Wolman & Miller, 1960
+    ix=np.argmax(y)
+    geqs=Qstar[ix]
+    ger=geqs*R
+    # Effective runoff, i.e., the runoff where the incision is closest to observed average incision rate
+    ix=np.argmax(np.abs(y-E))
+    efqs=Qstar[ix]
+    efr=efqs*R
+    return ger,efr,geqs,efqs,Qstar,y
+    
 def plot_all(k,Rb,k_e,k_w=15,f=0.08313,omega_a=0.50,
              omega_s=0.25,alpha=2/3,beta=2/3,a=1.5,tau_c=45,
              max_ksn=700,num_points=200,dist_type='inv_gamma',sc=-1):
