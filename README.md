@@ -185,13 +185,6 @@ These are outlines of the sampled catchments for the 10Be erosion rates that rep
   * LSDn_Int_Un - internal uncertainty on erosion rate in m/Myr
   * LSDn_Ext_Un - external uncertainty on erosion rate in m/Myr
   * mean_runoff - estimated mean runoff in mm/day
-  * mean_runoff1 - estiamted  mean runoff in mm/day using conservative approach
-  * corrected_m - mean rainfall from corrected TRMM in mm/day
-  * runoff_rati - estimated runoff ratio
-  * cr_SSN_est - estimated variability using stretched exponential from standard deviation of monthly mean snow cover
-  * cr_z_est - estimated variability using stretched exponential from max elevation of basin
-  * k_SSN_est - estimated variability using power law from standard deviation of monthly mean snow cover
-  * k_z_est - estimated variability using power law from max elevation of basin 
   * mode_rock_t - modal rock type exposed in catchment
   * mode_rock_t1 - percentage of catchment occupied by this modal rock type
   * rock_type_p - percentage of catchment that is unmapped rocktype
@@ -233,6 +226,9 @@ These are outlines of the sampled catchments for the 10Be erosion rates that rep
   * mgrad_phyll - mean gradient in phyliite and schist
   * mksn_granit - mean ksn in granite
   * mgrad_grani - mean gradient in granite
+  * cluster - cluster number
+  * k_e - median k_e value estimated for this basin
+  * tau_c - median tau_c value estimated for this basin
   
 ### GRDC Polygons
 These are outlines of the GRDC watersheds used for runoff analysis. The attribute table for this shapefile includes a variety of data:
@@ -243,16 +239,19 @@ These are outlines of the GRDC watersheds used for runoff analysis. The attribut
   * DA_km2 - drainage area of watershed in km^2
   * Q_m3_s - mean discharge in Q_m3_s
   * R_mm_dy - mean runoff in mm/day
-  * k_99perc - variability fit with a power law for the events above a 99% threshold
-  * N_99perc - number of events above threshold
-  * TRMMrain - corrected mean TRMM rainfall in watershed in mm/day
-  * RunRatio - runoff ratio based on TRMM rainfall
   * Z_max_km - max elevation in km of watershed
   * Snow_std - mean standard deviation of monthly mean snow cover
   * L_Rec_dy - length of record in days
   * Rec_Strt - start date of record
   * Rec_Stop - stop date of record 
   * cluster_num - cluster number from main text
+  * mn_trmm - mean rainfall from TRMM in mm/day
+  * wbl_c - fit shape parameter for 2 parameter Weibull distribution
+  * wbl_X0 - fit scale parameter for 2 parameter Weibull distribution
+  * wbl_mn - fit mean (Q-star) for 2 parameter Weibull distribution
+  * wbl_thresh - threshold used in fitting of tail for 2 parameter Weibull
+  * rtrn2 - observed magnitude of 2 year return flood in mm/day
+  * wbl_rtrn2 - estimated magnitude of 2 year return flood in mm/day from fit Weibull distribution
 
 ### Individual Basin PolyLines
 For each sampled basin for which an erosion rate is reported, we provide the stream network extracted from the STRM30 dataset. Each shapefile is named 'basin_XXXX_ksn0_5.shp', where XXXX is the sample name and the suffix indicates that it includes ksn values calculated for a reference concavity of 0.5. Each shapefile has the following attributes for each segment:
