@@ -17,8 +17,6 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 from matplotlib import gridspec
 
-import stochastic_threshold as stim
-
 df=pd.read_csv('data_tables/gc_ero_master_table.csv')
 # Extract main variables of interest
 ksn=df['mean_ksn'].to_numpy()
@@ -220,29 +218,6 @@ ax2.set_yscale('log')
 ax2.set_ylim((10,10**4))
 
 
-
-R=1.35
-k=4.39
-k_e=2.24e-10
-cL=stim.set_constants(R,k_e)
-[Ks,E,E_err,Q_starc]=stim.stim_range(k,cL,max_ksn=600,num_points=601,space_type='lin')
-
-ksn_vec_l=[]
-for i in range(len(dips)):
-    # Extract uplift rates
-    zv=z_vec_l[i]
-    # Iterate through and find closest ksn value to erosion rate
-    ks=np.zeros(zv.shape)
-    for j in range(len(ks)):
-        ix=np.argmin(np.abs(zv[j]-E))
-        ks[j]=Ks[ix]
-    ksn_vec_l.append(ks)
-
-ksn_vu=np.zeros(c_vec_l.shape)
-for i in range(len(c_vec_l)):
-    ix=np.argmin(np.abs(c_vec_l[i]-E))
-    ksn_vu[i]=Ks[ix]
-
 fig4=plt.figure(num=4,figsize=(15,8))
 ax1=plt.subplot(2,1,1)
 dbnorm=colors.Normalize(vmin=0,vmax=100)
@@ -254,10 +229,6 @@ ax1.errorbar(c[idx_ngc],ksn[idx_ngc],xerr=c_u_ngc,yerr=ksn_u[idx_ngc],linestyle=
 
 ax1.scatter(c[idx_lc],ksn[idx_lc],s=60,c=db[idx_lc],norm=dbnorm,cmap='plasma',zorder=2,edgecolors='k',marker='^')
 ax1.errorbar(c[idx_lc],ksn[idx_lc],xerr=c_u_lc,yerr=ksn_u[idx_lc],linestyle='none',c='black',zorder=1,elinewidth=0.5)
-
-for i in range(len(dips)):
-    ax1.plot(c_vec,ksn_vec_l[i],c='k',linestyle='--',linewidth=1,zorder=1)
-ax1.plot(c_vec,ksn_vu,c='k',linestyle=':',linewidth=3,zorder=1)
 
 cbar1=plt.colorbar(sc1,ax=ax1)
 cbar1.ax.set_ylabel('Distance from Center [km]')

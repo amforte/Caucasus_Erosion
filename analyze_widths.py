@@ -193,13 +193,13 @@ rm=clustmdf['r_mean'].to_numpy()
 k_e_o=clustmdf['k_e'].to_numpy()
 
 cl=stim.set_constants(rm[1],1.5e-11,dist_type='weibull',k_w=15)
-[KS1,E1,_,_]=stim.stim_range(cmb[1],cl,sc=smb[1],max_ksn=550)
+[KS1,E1,_]=stim.stim_range(cmb[1],cl,sc=smb[1],max_ksn=550)
 
 cl=stim.set_constants(rm[1],5e-11,dist_type='weibull',k_w=20)
-[KS2,E2,_,_]=stim.stim_range(cmb[1],cl,sc=smb[1],max_ksn=550)
+[KS2,E2,_]=stim.stim_range(cmb[1],cl,sc=smb[1],max_ksn=550)
 
 cl=stim.set_constants(rm[1],3.5e-12,dist_type='weibull',k_w=10)
-[KS3,E3,_,_]=stim.stim_range(cmb[1],cl,sc=smb[1],max_ksn=550)
+[KS3,E3,_]=stim.stim_range(cmb[1],cl,sc=smb[1],max_ksn=550)
 
 f2ax4.plot(E1,KS1,c='k',linestyle='-',label='$k_w$=15; $k_e$=1.5e-11')
 f2ax4.plot(E2,KS2,c='k',linestyle=':',label='$k_w$=20; $k_e$=1.5e-11')

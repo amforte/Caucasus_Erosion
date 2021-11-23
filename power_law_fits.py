@@ -19,8 +19,6 @@ from sklearn.neighbors import KernelDensity
 from astropy.utils import NumpyRNGContext
 from astropy.stats import bootstrap
 
-import stochastic_threshold as stim
-
 ########################
 #### Set Parameters ####
 ########################
@@ -126,13 +124,6 @@ k_e=dfke['k_e_boostrap'].to_numpy()
 est_err=dfke['rmse_bootstrap'].to_numpy()
 e_predicted=dfke['E_pred'].to_numpy() 
    
-# Prediction for means of runoff, k, and k_e
-k_e_mean=np.median(k_e)
-k_mean=np.median(k)
-R_mean=np.median(mR)
-cL=stim.set_constants(R_mean,k_e_mean)
-[Ks,E,E_err,Q_starc]=stim.stim_range(k_mean,cL,max_ksn=600,num_points=500)
-
 # Generate KSN
 ksn_vec=np.arange(0,1000,5)
 
@@ -328,9 +319,7 @@ if run_bs:
 # Basic plots of fits
 fig4=plt.figure(num=4,figsize=(8,15))
 f4ax1=plt.subplot(3,1,1)
-f4ax1.plot(E,Ks,c='black',linestyle=':',zorder=1,label='STIM Using Median Values')
 
-   
 if run_mc:
     f4ax1.plot(pw_mc_ero_vec,ksn_vec,c=mc_col,zorder=1,label='MC-ODR Fit')
     f4ax1.fill_betweenx(ksn_vec,pw_mc_ero_vec1,pw_mc_ero_vec2,color=mc_col,alpha=0.25)
@@ -353,9 +342,7 @@ plt.legend(loc='lower right')
 plt.title('Number of Replicates : '+str(num_replicates))
 
 f4ax2=plt.subplot(3,1,2)
-f4ax2.plot(E,Ks,c='black',linestyle=':',zorder=1,label='STIM Using Median Values')
 
-    
 if run_mc:
     f4ax2.plot(pw_mc_ero_vec,ksn_vec,c=mc_col,zorder=1,label='MC-ODR Fit')
     f4ax2.fill_betweenx(ksn_vec,pw_mc_ero_vec1,pw_mc_ero_vec2,color=mc_col,alpha=0.25)
@@ -377,8 +364,6 @@ plt.ylabel('$k_{sn}$ [m]')
 plt.legend(loc='lower right')
 
 f4ax3=plt.subplot(3,1,3)
-f4ax3.plot(E,Ks,c='black',linestyle=':',zorder=1,label='STIM Using Median Values')
-
 
 if run_mc:
     f4ax3.plot(pw_mc_ero_vec,ksn_vec,c=mc_col,zorder=1,label='MC-ODR Fit')

@@ -268,11 +268,11 @@ for i in range(num_clustb):
     plt.subplot(2,4,i+5)
     
     wcl=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    [KSpop,Epop,_,_]=stim.stim_range(cb_pop[i],wcl,sc=sb_pop[i],max_ksn=550)
+    [KSpop,Epop,_]=stim.stim_range(cb_pop[i],wcl,sc=sb_pop[i],max_ksn=550)
     plt.plot(Epop,KSpop,c=color_list[i],zorder=2,linewidth=2,label='Mean of Cluster',linestyle='--')
     for j in range(len(mR[idx])):
         wcl0=stim.set_constants(mR[idx][j],k_e[i],dist_type='weibull',tau_c=t_c[i])
-        [KS0,E0,_,_]=stim.stim_range(cb[idx][j],wcl0,sc=sb[idx][j],max_ksn=550)
+        [KS0,E0,_]=stim.stim_range(cb[idx][j],wcl0,sc=sb[idx][j],max_ksn=550)
         plt.plot(E0,KS0,c=color_list[i],zorder=1,linewidth=0.5,alpha=0.75)
     plt.errorbar(e[ecluster_label==i],ksn[ecluster_label==i],ksnu[ecluster_label==i],eu[ecluster_label==i],ecolor=color_list[i],linestyle='',elinewidth=0.5)
     plt.scatter(e[ecluster_label==i],ksn[ecluster_label==i],s=10,marker='s',c=color_list[i],alpha=0.5,zorder=0)
@@ -285,7 +285,7 @@ for i in range(num_clustb):
         plt.scatter(e[ecluster_label==4],ksn[ecluster_label==4],s=10,marker='s',c='gray',alpha=0.5,zorder=0)         
     
     wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='Fit to Composite')
     plt.legend(loc='best')   
 
@@ -336,11 +336,11 @@ for i in range(num_clustb):
     plt.subplot(2,4,i+5)
     
     wcl=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    [KSpop,Epop,_,_]=stim.stim_range(cb_pop[i],wcl,sc=sb_pop[i],max_ksn=550)
+    [KSpop,Epop,_]=stim.stim_range(cb_pop[i],wcl,sc=sb_pop[i],max_ksn=550)
     plt.plot(Epop,KSpop,c=color_list[i],zorder=2,linewidth=2,label='Mean of Cluster',linestyle='--')
     for j in range(len(mR[idx])):
         wcl0=stim.set_constants(mR[idx][j],k_e[i],dist_type='weibull',tau_c=t_c[i])
-        [KS0,E0,_,_]=stim.stim_range(cb[idx][j],wcl0,sc=sb[idx][j],max_ksn=550)
+        [KS0,E0,_]=stim.stim_range(cb[idx][j],wcl0,sc=sb[idx][j],max_ksn=550)
         plt.plot(E0,KS0,c=color_list[i],zorder=1,linewidth=0.5,alpha=0.75)
     plt.errorbar(e[ecluster_label==i],ksn[ecluster_label==i],ksnu[ecluster_label==i],eu[ecluster_label==i],ecolor=color_list[i],linestyle='',elinewidth=0.5)
     plt.scatter(e[ecluster_label==i],ksn[ecluster_label==i],s=10,marker='s',c=color_list[i],alpha=0.5,zorder=0)
@@ -353,7 +353,7 @@ for i in range(num_clustb):
         plt.scatter(e[ecluster_label==4],ksn[ecluster_label==4],s=10,marker='s',c='gray',alpha=0.5,zorder=0)         
     
     wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='Fit to Composite')
     plt.legend(loc='best')   
 
@@ -406,19 +406,19 @@ for i in range(num_clustb):
     plt.scatter(e[ecluster_label==i],ksn[ecluster_label==i],s=10,marker='s',c=color_list[i],alpha=0.5,zorder=0)
 
     wcl=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    [KSpop,Epop,_,_]=stim.stim_range(cb_pop[i],wcl,sc=sb_pop[i],max_ksn=550)
+    [KSpop,Epop,_]=stim.stim_range(cb_pop[i],wcl,sc=sb_pop[i],max_ksn=550)
     plt.plot(Epop,KSpop,c=color_list[i],zorder=2,linewidth=2,label='Mean of Cluster',linestyle='--')
            
     wclb=stim.set_constants(mR_pop[i],k_e_fix,dist_type='weibull',tau_c=t_c[i])
-    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='Fit to Composite')
         
     wclb=stim.set_constants(mR_pop[i],k_e_lo,dist_type='weibull',tau_c=t_c[i])
-    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle=':',label='25% $k_{e}$')
 
     wclb=stim.set_constants(mR_pop[i],k_e_hi,dist_type='weibull',tau_c=t_c[i])
-    [KSb,Eb,_,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle=':',label='75% $k_{e}$')
     plt.legend(loc='best')
 

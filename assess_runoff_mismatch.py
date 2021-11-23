@@ -20,7 +20,7 @@ import stochastic_threshold as stim
 
 def min_R(X,k_e,tau_c,ks,e,c,s):
     cl=stim.set_constants(X,k_e,dist_type='weibull',tau_c=tau_c)
-    [ep,_,_]=stim.stim_one(ks,c,cl,sc=s)
+    [ep,_]=stim.stim_one(ks,c,cl,sc=s)
     return (ep-e)**2
 
 edf=pd.read_csv('data_tables/gc_ero_master_table.csv')

@@ -65,7 +65,7 @@ def min_k_e_optim(ks,ksu,e,eu,R,c,s,ns,seed):
     # Define internal minimization function
     def min_k_e_internal(X,ksi,ei,R,c,s):
         cl=stim.set_constants(R,X,dist_type='weibull')
-        [ep,_,_]=stim.stim_one(ksi,c,cl,sc=s)
+        [ep,_]=stim.stim_one(ksi,c,cl,sc=s)
         return np.abs(ep-e)**2
     # Begin minimization loop
     for i in range(ns):
@@ -86,7 +86,7 @@ def min_tau_c_optim(k_e,ks,ksu,e,eu,R,c,s,ns,seed):
     # Define internal minimization function
     def min_tau_c_internal(X,k_e,ksi,ei,R,c,s):
         cl=stim.set_constants(R,k_e,dist_type='weibull',tau_c=X)
-        [ep,_,_]=stim.stim_one(ksi,c,cl,sc=s)
+        [ep,_]=stim.stim_one(ksi,c,cl,sc=s)
         return np.abs(ep-e)**2
     # Begin minimization loop
     for i in range(ns):

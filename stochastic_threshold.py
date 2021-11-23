@@ -158,7 +158,6 @@ def stim_one(Ks,k,con_list,sc=-1):
         x=np.logspace(np.log10(Q_starc),np.log10(q_max),1000)
         y=ero_integrand(Ks,x,k,con_list)
         E=integrate.simpson(y,x)
-        E_err=np.zeros(E.shape)
     elif dist_type=='weibull':
         if sc>0:
             # func=lambda x : ero_integrand_w(Ks,x,k,sc,con_list)
@@ -166,11 +165,10 @@ def stim_one(Ks,k,con_list,sc=-1):
             x=np.logspace(np.log10(Q_starc),np.log10(q_max),1000)
             y=ero_integrand_w(Ks,x,k,sc,con_list)
             E=integrate.simpson(y,x)
-            E_err=np.zeros(E.shape)
         else:
             raise Exception("Valid argument for the scale parameter must be supplied if using Weibull distribution")
     
-    return E,E_err,Q_starc    
+    return E,Q_starc    
 
 def stim_range(k,con_list,sc=-1,max_ksn=700,num_points=200,space_type='log'):
     dist_type=unpack_constants(con_list)[17]
@@ -180,15 +178,14 @@ def stim_range(k,con_list,sc=-1,max_ksn=700,num_points=200,space_type='log'):
     elif space_type=='lin':
         Ks=np.linspace(0,max_ksn,num=num_points)        
     E=np.zeros((num_points,1))
-    E_err=np.zeros((num_points,1))
     Q_starc=np.zeros((num_points,1))
     if dist_type=='inv_gamma':
         for i in range(len(Ks)):
-            [E[i],E_err[i],Q_starc[i]]=stim_one(Ks[i],k,con_list)
+            [E[i],Q_starc[i]]=stim_one(Ks[i],k,con_list)
     elif dist_type=='weibull':
         for i in range(len(Ks)):
-            [E[i],E_err[i],Q_starc[i]]=stim_one(Ks[i],k,con_list,sc=sc)        
-    return Ks,E,E_err,Q_starc
+            [E[i],Q_starc[i]]=stim_one(Ks[i],k,con_list,sc=sc)        
+    return Ks,E,Q_starc
 
 def phi_est(k,con_list):
     [k_e,k_q,k_t,k_w,f,y,m,n,omega_a,
@@ -205,7 +202,7 @@ def ret_time(k,E,Ks,con_list):
     if dist_type=='weibull':
         raise Exception('Return time estimation is not defined for a Weibull shape parameter')
     else:
-        [Em,Em_err,Q_starc]=stim_one(Ks,k,con_list)
+        [Em,Q_starc]=stim_one(Ks,k,con_list)
         tr=(((k+1)*gamma(k+1))/k**(k+1))*Q_starc**(1+k)
         # tr=gammainc(k/Q_starc,k+1)**-1
         # Convert to meters per second
@@ -250,7 +247,7 @@ def plot_all(k,Rb,k_e,k_w=15,f=0.08313,omega_a=0.50,
                      omega_s=omega_s,alpha=alpha,beta=beta,
                      a=a,tau_c=tau_c,dist_type=dist_type)
     if dist_type=='inv_gamma':
-        [Ks,E,E_err,Q_starc]=stim_range(k,cL,max_ksn=max_ksn,num_points=num_points)
+        [Ks,E,Q_starc]=stim_range(k,cL,max_ksn=max_ksn,num_points=num_points)
         Ks_annoT=an_const(E,k,cL)
         Ks_anT=an_thresh(E,k,cL)
         # Plot
@@ -264,7 +261,7 @@ def plot_all(k,Rb,k_e,k_w=15,f=0.08313,omega_a=0.50,
                   '; $k_e$={:.2e}'.format(k_e)+r'; $\tau_{c}$'+'={:.2f}'.format(tau_c))
         plt.legend(loc='lower right')
     else:
-        [Ks,E,E_err,Q_starc]=stim_range(k,cL,max_ksn=max_ksn,num_points=num_points,sc=sc)
+        [Ks,E,Q_starc]=stim_range(k,cL,max_ksn=max_ksn,num_points=num_points,sc=sc)
         # Plot
         plt.figure(figsize=(10,10))
         plt.plot(E,Ks,c='black',linewidth=2,label='Numerical Solution')
