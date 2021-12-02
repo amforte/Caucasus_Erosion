@@ -176,7 +176,7 @@ def stim_range(k,con_list,sc=-1,max_ksn=700,num_points=200,space_type='log'):
     if space_type=='log':
         Ks=np.logspace(0,np.log10(max_ksn),num=num_points)
     elif space_type=='lin':
-        Ks=np.linspace(0,max_ksn,num=num_points)        
+        Ks=np.linspace(1,max_ksn,num=num_points)        
     E=np.zeros((num_points,1))
     Q_starc=np.zeros((num_points,1))
     if dist_type=='inv_gamma':
