@@ -749,6 +749,27 @@ plt.xlabel('Erosion Rate [m/Myr]')
 plt.ylabel('$k_{sn}-Q$')
 
 
+plt.figure(11,figsize=(10,10))
+for i in range(num_clustb):
+    plt.errorbar(e[ecluster_label==i],ksn[ecluster_label==i],yerr=ksnu[ecluster_label==i],xerr=eu[ecluster_label==i],ecolor='gray',linestyle='',zorder=0)
+    plt.scatter(e[ecluster_label==i],ksn[ecluster_label==i],c=color_list[i],s=60,zorder=1)
+    wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
+    [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=600)    
+    plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',
+             label='k_e fixed: R = '+str(np.round(mR_pop[i],2))+' mm/day; c = '+str(np.round(cmb[i],2))+'; X0 = '+str(np.round(smb[i],2)))            
+
+xvec=np.logspace(np.log10(80),np.log10(600),100)
+plt.plot(1.19e-6*xvec**3.47,xvec,c='k')
+plt.plot(9.19e-6*xvec**3.10,xvec,c='k',linestyle=':')
+plt.plot(7.26e-8*xvec**3.96,xvec,c='k',linestyle=':')    
+plt.xlabel('Erosion Rate [m/Myr]')
+plt.ylabel('$k_{sn}$')
+plt.legend(loc='best')
+plt.xscale('log')
+plt.yscale('log')
+plt.xlim((20,10000))
+plt.ylim((80,600))
+
 # f1.savefig('cluster_z.pdf')
 # f2.savefig('cluster_class.pdf')
 # f3.savefig('cluster_ksn_e.pdf')
