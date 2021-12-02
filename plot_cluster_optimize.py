@@ -405,19 +405,22 @@ for i in range(num_clustb):
     plt.errorbar(e[ecluster_label==i],ksn[ecluster_label==i],ksnu[ecluster_label==i],eu[ecluster_label==i],ecolor=color_list[i],linestyle='',elinewidth=0.5)
     plt.scatter(e[ecluster_label==i],ksn[ecluster_label==i],s=10,marker='s',c=color_list[i],alpha=0.5,zorder=0)
 
-    wcl=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
+    wcl=stim.set_constants(mR_pop[i],k_e_fix,dist_type='weibull',tau_c=t_c[i])
     [KSpop,Epop,_]=stim.stim_range(cb_pop[i],wcl,sc=sb_pop[i],max_ksn=550)
     plt.plot(Epop,KSpop,c=color_list[i],zorder=2,linewidth=2,label='Mean of Cluster',linestyle='--')
            
     wclb=stim.set_constants(mR_pop[i],k_e_fix,dist_type='weibull',tau_c=t_c[i])
+    # wclb=stim.set_constants(np.mean(emR[ecluster_label==i]),k_e_fix,dist_type='weibull',tau_c=t_c[i])
     [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='Fit to Composite')
         
     wclb=stim.set_constants(mR_pop[i],k_e_lo,dist_type='weibull',tau_c=t_c[i])
+    # wclb=stim.set_constants(np.mean(emR[ecluster_label==i]),k_e_lo,dist_type='weibull',tau_c=t_c[i])
     [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle=':',label='25% $k_{e}$')
 
     wclb=stim.set_constants(mR_pop[i],k_e_hi,dist_type='weibull',tau_c=t_c[i])
+    # wclb=stim.set_constants(np.mean(emR[ecluster_label==i]),k_e_hi,dist_type='weibull',tau_c=t_c[i])
     [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle=':',label='75% $k_{e}$')
     plt.legend(loc='best')
@@ -749,11 +752,11 @@ plt.xlabel('Erosion Rate [m/Myr]')
 plt.ylabel('$k_{sn}-Q$')
 
 
-plt.figure(11,figsize=(10,10))
+plt.figure(11,figsize=(10,5))
 for i in range(num_clustb):
     plt.errorbar(e[ecluster_label==i],ksn[ecluster_label==i],yerr=ksnu[ecluster_label==i],xerr=eu[ecluster_label==i],ecolor='gray',linestyle='',zorder=0)
     plt.scatter(e[ecluster_label==i],ksn[ecluster_label==i],c=color_list[i],s=60,zorder=1)
-    wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
+    wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull')
     [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=600)    
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',
              label='k_e fixed: R = '+str(np.round(mR_pop[i],2))+' mm/day; c = '+str(np.round(cmb[i],2))+'; X0 = '+str(np.round(smb[i],2)))            
@@ -769,6 +772,7 @@ plt.xscale('log')
 plt.yscale('log')
 plt.xlim((20,10000))
 plt.ylim((80,600))
+
 
 # f1.savefig('cluster_z.pdf')
 # f2.savefig('cluster_class.pdf')
