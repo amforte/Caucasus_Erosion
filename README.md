@@ -18,7 +18,7 @@ A pdf describing the compilation of geologic maps to describe the lithology of e
 Three excel supplemental tables referenced in the main text of the manuscript. Identical versions are submitted with the in review manuscript as supplementary material.
 
 ## Codes
-We provide a series of analysis or plotting codes written in Python v.3.7 for some of the more intricate analyses described in the main text methods or supplement. We also provide some of the scripts for generating various plots in the main paper or  supplement. This is not a complete set of all functions or scripts to generate every figure in the paper, but rather as a way of interpreting the data stored in the data tables. Brief descriptions of each code are provided below.
+We provide a series of analysis or plotting codes written in Python v.3.7 for some of the more intricate analyses described in the main text methods or supplement. We also provide some of the scripts for generating various plots in the main paper or  supplement. This is not a complete set of all functions or scripts to generate every figure in the paper, but rather as a way of interpreting the data stored in the data tables. We also include codes for some analyses that are not discussed in the paper, mostly that were designed to ensure the analyses or interpretations we do present were robust. Brief descriptions of each code are provided below.
 ### analyze_widths.py
 Reads and plots results of measuring widths of streams for selected 10Be basins as described in the supplement
 ### assess_runoff_mismatch.py
@@ -39,6 +39,10 @@ Functions for fitting discharge distributions.
 Generates exceedance frequency plots for the gauged GRDC basins
 ### discharge_time_series.py
 Plots smoothed runoff and rainfall time series for the GRDC basins 
+### estimate_n.py
+Fits a power law (i.e., stream power) relationship to the composite STIM relationships to approximate what the effective 'n', i.e., the slope exponent in stream power, would be for each of these relationships.
+### estimate_runoff.py
+Fits a relationship between observed mean rainfall from TRMM and mean runoff in the gauged GRDC basins and then uses this relationship to estimate mean runoff within the ungauged basins from their observed mean rainfall. 
 ### grdc_seasonal_plots.py
 Generates various plots related to the seasonal fraction and daily means
 ### month_trend.py
@@ -48,7 +52,7 @@ Plots the results the cluster_and_optimize routine
 ### power_law_fits.py
 Algorithms for performing the bootstrap and monte-carlo fitting of the power law SPIM ksn - E relationship
 ### stochastic_threshold.py
-Implementation of the stochastic threshold model, including solutins for both inverse-gamma and weibull distributions
+Implementation of the stochastic threshold model, including solutions for both inverse-gamma and weibull distributions
 ### tectonics_plot.py
 Plots some of the plots related to the comparison of the erosion rates with tectonic indicators
 
@@ -261,4 +265,5 @@ For each sampled basin for which an erosion rate is reported, we provide the str
   * cut_fill - mean of deviation between raw DEM and hydrologically conditioned DEM, negative numbers indicate conditioned elevations below raw elevations
   * seg_dist - legnth of segment in m, measured as stream distance
 
-
+## DEPRECATED
+The DEPRECATED folder contains older versions of code used in the previous version of the paper. These are maintained for reference purposes while the paper is under review and will be removed from the final release after acceptance.
