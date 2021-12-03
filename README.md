@@ -1,5 +1,5 @@
 # ReadMe #
-[![DOI](https://zenodo.org/badge/350679832.svg)](https://zenodo.org/badge/latestdoi/350679832)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5752531.svg)](https://doi.org/10.5281/zenodo.5752531)
 
 This is the ReadMe for the GitHub repository that contains supplemental data and codes for the in review manuscript "Low variability runoff inhibits coupling of climate, tectonics, and topography in the Greater Caucasus" by Forte et al. submitted to Earth and Planetary Science Letters. Below are brief descriptions of categories of items included in this repository.
 
