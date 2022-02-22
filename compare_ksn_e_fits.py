@@ -14,7 +14,6 @@ If you use this code or derivatives, please cite the original paper.
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.spatial import distance_matrix
 
 import stochastic_threshold as stim
 
@@ -24,20 +23,21 @@ def find_ksn(eO,eP,ksnP):
         ix=np.argmin(np.abs(eO[i]-eP))
         ksnO[i]=ksnP[ix]
     return ksnO
-        
-        
+                
 def rmse(y,yp):
     mse=(np.sum((yp-y)**2))/len(y)
     return np.sqrt(mse)
-    
+
+def chi_sq(yi,ypi,yui):
+    return np.sum(((yi-ypi)**2)/(yui**2))
 
 # Load in Data from Erosion Rate basins
 edf=pd.read_csv('data_tables/gc_ero_master_table.csv')
 ksn=edf['mean_ksn'].to_numpy()
-ksnq=edf['mean_ksn_q'].to_numpy()
 e=edf['St_E_rate_m_Myr'].to_numpy()
 eu=edf['St_Ext_Unc'].to_numpy()
 ksnu=edf['se_ksn'].to_numpy()
+ksnus=edf['std_ksn'].to_numpy()
 
 # Load in results from optimization
 edf2=pd.read_csv('result_tables/optimized_ero_k_e_tau_c.csv')
@@ -81,8 +81,17 @@ f1=plt.figure(num=1,figsize=(25,20))
 for i in range(num_clustb):
     idx=cluster_label==i
     
-    eOI=e[ecluster_label==i]
-    ksnOI=ksn[ecluster_label==i]
+    eOIt=e[ecluster_label==i]
+    ksnOIt=ksn[ecluster_label==i]
+    euOIt=eu[ecluster_label==i]
+    ksnuOIt=ksnus[ecluster_label==i]
+    
+    ix=euOIt<2800
+    
+    eOI=np.copy(eOIt[ix])
+    ksnOI=np.copy(ksnOIt[ix])
+    euOI=np.copy(euOIt[ix])
+    ksnuOI=np.copy(ksnuOIt[ix])
     
     plt.subplot(3,4,i+1)
     
@@ -92,24 +101,21 @@ for i in range(num_clustb):
     plt.scatter(e[ecluster_label==i],ksn[ecluster_label==i],s=10,marker='s',c=color_list[i],alpha=0.5,zorder=0)
             
     wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550,num_points=1000)    
-    plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='Fit to Composite')
-     
+    [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550,num_points=1000) 
+        
+    # Plot SPIM
+    plt.plot(s_K*KSb**s_n,KSb,c='k',zorder=1,linewidth=2,linestyle='-',label='SPIM')
+    plt.fill_betweenx(KSb,s_K25*KSb**s_n75,s_K75*KSb**s_n25,color='k',alpha=0.25)    
+    
+    # Plot STIM
+    plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='STIM')
     wclb=stim.set_constants(mR_pop[i],k_e_lo,dist_type='weibull',tau_c=t_c[i])
     [KSb1,Eb1,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
-    # plt.plot(Eb1,KSb1,c=color_list[i],zorder=2,linewidth=2,linestyle=':',label='25% $k_{e}$')
-
     wclb=stim.set_constants(mR_pop[i],k_e_hi,dist_type='weibull',tau_c=t_c[i])
     [KSb2,Eb2,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
-    # plt.plot(Eb2,KSb2,c=color_list[i],zorder=2,linewidth=2,linestyle=':',label='75% $k_{e}$')
-    
     plt.fill_betweenx(KSb1,Eb1.ravel(),Eb2.ravel(),color=color_list[i],alpha=0.25)
     
-    plt.plot(s_K*KSb**s_n,KSb,c='k',zorder=1,linewidth=2,linestyle='-',label='SPIM')
-    # plt.plot(s_K25*KSb**s_n75,KSb,c='k',zorder=1,linewidth=2,linestyle=':',label='SPIM Bounds')
-    # plt.plot(s_K75*KSb**s_n25,KSb,c='k',zorder=1,linewidth=2,linestyle=':')
-    
-    plt.fill_betweenx(KSb,s_K25*KSb**s_n75,s_K75*KSb**s_n25,color='k',alpha=0.25)
+
     
     plt.legend(loc='best')  
 
@@ -127,17 +133,19 @@ for i in range(num_clustb):
     
     SPIM_RMSE=rmse(ksnOI,SPIM_ksn)
     STIM_RMSE=rmse(ksnOI,STIM_ksn)
+    SPIM_CHI2=chi_sq(ksnOI,SPIM_ksn,ksnuOI)
+    STIM_CHI2=chi_sq(ksnOI,STIM_ksn,ksnuOI)
 
     plt.stem(eOI,SPIM_ksn-ksnOI,linefmt='k',markerfmt='ko',
-             basefmt=' ',label='SPIM - RMSE = '+str(np.round(SPIM_RMSE,0).astype('int')))
+             basefmt=' ',label=r'SPIM - RMSE = '+str(np.round(SPIM_RMSE,0).astype('int'))+'; $\chi^{2}$ = '+str(np.round(SPIM_CHI2,0).astype('int')))
     (ma,st,ba)=plt.stem(eOI,STIM_ksn-ksnOI,linefmt=color_list[i],
-                        label='STIM - RMSE = '+str(np.round(STIM_RMSE,0).astype('int')))
+                        label=r'STIM - RMSE = '+str(np.round(STIM_RMSE,0).astype('int'))+'; $\chi^{2}$ = '+str(np.round(STIM_CHI2,0).astype('int')))
     plt.setp(ma,markerfacecolor=color_list[i],markeredgecolor=color_list[i])
     plt.setp(ba,color='gray',linestyle=':')
 
     plt.legend(loc='best')
     plt.xlabel('Erosion Rate [m/Myr]')
-    plt.ylabel('$\Delta k_{sn}$ [m]')
+    plt.ylabel('$\Delta$ $k_{sn}$ [m]')
     plt.xlim((10,10000))
     plt.xscale('log')
     
@@ -147,26 +155,30 @@ for i in range(num_clustb):
     STIM_E=np.zeros((len(eOI)))
     
     SPIM_RMSE=rmse(eOI,SPIM_E)
+    SPIM_CHI2=chi_sq(eOI,SPIM_E,euOI)
   
     wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
     for j in range(len(eOI)):
         [STIM_E[j],_]=stim.stim_one(ksnOI[j],cmb[i],wclb,sc=smb[i])
     
-    STIM_RMSE=rmse(eOI,STIM_E) 
+    STIM_RMSE=rmse(eOI,STIM_E)
+    STIM_CHI2=chi_sq(eOI,STIM_E,euOI)
     
+    
+ 
     plt.stem(ksnOI,SPIM_E-eOI,linefmt='k',orientation='horizontal',markerfmt='ko',
-             basefmt=' ',label='SPIM - RMSE = '+str(np.round(SPIM_RMSE,0).astype('int')))
+             basefmt=' ',label=r'SPIM - RMSE = '+str(np.round(SPIM_RMSE,0).astype('int'))+'; $\chi^{2}$ = '+str(np.round(SPIM_CHI2,0).astype('int')))
     (ma,st,ba)=plt.stem(ksnOI,STIM_E-eOI,linefmt=color_list[i],orientation='horizontal',
-                        label='STIM - RMSE = '+str(np.round(STIM_RMSE,0).astype('int')))
+                        label=r'STIM - RMSE = '+str(np.round(STIM_RMSE,0).astype('int'))+'; $\chi^{2}$ = '+str(np.round(STIM_CHI2,0).astype('int')))
     plt.setp(ma,markerfacecolor=color_list[i],markeredgecolor=color_list[i])
     plt.setp(ba,color='gray',linestyle=':')    
     plt.legend(loc='best')
     
-    plt.xlabel('$\Delta Erosion Rate [m/Myr]$')
+    plt.xlabel('$\Delta$ Erosion Rate [m/Myr]')
     plt.ylabel('$k_{sn}$ [m]')
     plt.ylim((0,550))
     
-    
+f1.savefig('compare_stim_spim.pdf')    
     
     
     
