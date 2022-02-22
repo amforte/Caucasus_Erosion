@@ -31,6 +31,8 @@ Plots Budyko relationship for gauged basin and tests whether method for estimati
 Performs a k-means clustering to break GRDC basins into different hydro-climatic regions, classifies the ungauged basins within these clusters, and then estimates optimized value of both k_e and tau_c
 ### compare_distribution_fits.py
 Compares the results of different algorithms and underlying parametric models for fitting the runoff distributions
+### compare_ksn_e_fits.py
+Compares the goodness of fit of the STIM and SPIM relationships to the observed erosion rate data
 ### correlation_plots.py
 Plots a variety of variables against mean basin ksn, mean basin gradient, and erosion rate and calculates pearson's correlation coefficient for each pair
 ### discharge_fit.py
