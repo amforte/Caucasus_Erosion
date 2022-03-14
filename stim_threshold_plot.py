@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Compares the power law fit, assuming a simple stream power model, to
-the "fit" assuming a stochastic thershold incision model. 
+Generates plots of thresholds for incision for the different clusters. 
 
 Written by Adam M. Forte for 
 "Low variability runoff inhibits coupling of climate, tectonics, and 
@@ -10,20 +9,12 @@ topography in the Greater Caucasus"
 
 If you use this code or derivatives, please cite the original paper.
 """
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import weibull_min
 
 import stochastic_threshold as stim
-
-def find_ksn(eO,eP,ksnP):
-    ksnO=np.zeros((len(eO)))
-    for i in range(len(eO)):
-        ix=np.argmin(np.abs(eO[i]-eP))
-        ksnO[i]=ksnP[ix]
-    return ksnO
-                
 
 # Load in Data from Erosion Rate basins
 edf=pd.read_csv('data_tables/gc_ero_master_table.csv')
@@ -71,23 +62,15 @@ smb=clustmdf['s_aggr'].to_numpy()
 ### Start Plotting   
 color_list=['maroon','dodgerblue','darkorange','darkolivegreen','crimson','blue']
 
-f1=plt.figure(num=1,figsize=(25,20))
+f1=plt.figure(num=1,figsize=(20,25))
+
+s1=np.arange(1,8,2)
+s2=np.arange(2,9,2)
+
 for i in range(num_clustb):
     idx=cluster_label==i
-    
-    eOIt=e[ecluster_label==i]
-    ksnOIt=ksn[ecluster_label==i]
-    euOIt=eu[ecluster_label==i]
-    ksnuOIt=ksnus[ecluster_label==i]
-    
-    ix=euOIt<2800
-    
-    eOI=np.copy(eOIt[ix])
-    ksnOI=np.copy(ksnOIt[ix])
-    euOI=np.copy(euOIt[ix])
-    ksnuOI=np.copy(ksnuOIt[ix])
-    
-    plt.subplot(3,4,i+1)
+        
+    plt.subplot(4,2,s1[i])
     
     plt.title('Cluster '+str(i+1)) 
     
@@ -95,76 +78,63 @@ for i in range(num_clustb):
     plt.scatter(e[ecluster_label==i],ksn[ecluster_label==i],s=10,marker='s',c=color_list[i],alpha=0.5,zorder=0)
             
     wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    [KSb,Eb,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550,num_points=1000) 
-        
-    # Plot SPIM
-    plt.plot(s_K*KSb**s_n,KSb,c='k',zorder=1,linewidth=2,linestyle='-',label='SPIM')
-    plt.fill_betweenx(KSb,s_K25*KSb**s_n75,s_K75*KSb**s_n25,color='k',alpha=0.25)    
-    
-    # Plot STIM
+    [KSb,Eb,Qc]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550) 
     plt.plot(Eb,KSb,c=color_list[i],zorder=2,linewidth=2,linestyle='-',label='STIM')
+    
     wclb=stim.set_constants(mR_pop[i],k_e_lo,dist_type='weibull',tau_c=t_c[i])
-    [KSb1,Eb1,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    [KSb1,Eb1,Qc1]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     wclb=stim.set_constants(mR_pop[i],k_e_hi,dist_type='weibull',tau_c=t_c[i])
-    [KSb2,Eb2,_]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
+    [KSb2,Eb2,Qc2]=stim.stim_range(cmb[i],wclb,sc=smb[i],max_ksn=550)    
     plt.fill_betweenx(KSb1,Eb1.ravel(),Eb2.ravel(),color=color_list[i],alpha=0.25)
     
-
-    
-    plt.legend(loc='best')  
-
     plt.xlabel('Erosion Rate [m/Myr]')
     plt.ylabel('$k_{sn}$ [m]')
     plt.xlim((10,10000))
     plt.xscale('log')
     plt.ylim((0,550))
     
-    plt.subplot(3,4,i+5)
+    Q_star=np.logspace(-1,5,1000)
+    R_vec=Q_star*mR_pop[i]
+    cdf=weibull_min.sf(Q_star,cmb[i],loc=0,scale=smb[i])
     
-    # Estimate y position
-    SPIM_ksn=find_ksn(eOI,s_K*KSb**s_n,KSb)
-    STIM_ksn=find_ksn(eOI,Eb,KSb)
+    ax1=plt.subplot(4,2,s2[i])
     
-    plt.stem(eOI,SPIM_ksn-ksnOI,linefmt='k',markerfmt='ko',
-             basefmt=' ',label='SPIM')
-    (ma,st,ba)=plt.stem(eOI,STIM_ksn-ksnOI,linefmt=color_list[i],
-                        label='STIM')
-    plt.setp(ma,markerfacecolor=color_list[i],markeredgecolor=color_list[i])
-    plt.setp(ba,color='gray',linestyle=':')
+    plt1=ax1.plot(Qc*mR_pop[i],KSb,linewidth=2,c=color_list[i],label='Critical Runoff')
+    plt2=ax1.plot([mR_pop[i],mR_pop[i]],[0,550],linewidth=2,c=color_list[i],linestyle='--',label='Mean Runoff')
+    ax1.set_xlabel('Runoff [mm/day]')
+    ax1.set_xlim((0.5,1000))
+    ax1.set_xscale('log')
+    ax1.set_ylabel('$k_{sn}$ [m]')
+    ax1.set_ylim((0,550))
+    
+    ax2=ax1.twinx()
+    plt3=ax2.plot(R_vec,cdf,c=color_list[i],linewidth=2,linestyle=':',label='Probability of Exceedance')
+    ax2.set_yscale('log')
+    ax2.set_ylim((1e-7,1))
+    ax2.set_ylabel('Exceedance Frequency')
+    
+    ax2.axhline(1/7,c='k',linestyle=':',zorder=0)
+    ax2.axhline(1/30,c='k',linestyle=':',zorder=0)
+    ax2.axhline(1/(1*365.25),c='k',linestyle=':',zorder=0)
+    ax2.axhline(1/(10*365.25),c='k',linestyle=':',zorder=0)
+    ax2.axhline(1/(100*365.25),c='k',linestyle=':',zorder=0)
+    ax2.axhline(1/(1000*365.25),c='k',linestyle=':',zorder=0)
+    ax2.axhline(1/(10000*365.25),c='k',linestyle=':',zorder=0)
 
-    plt.legend(loc='best')
-    plt.xlabel('Erosion Rate [m/Myr]')
-    plt.ylabel('$\Delta$ $k_{sn}$ [m]')
-    plt.xlim((10,10000))
-    plt.xscale('log')
+    ax2.text(200,1/7,'1 week',fontsize='large',va='bottom')
+    ax2.text(200,1/30,'30 days',fontsize='large',va='bottom')
+    ax2.text(200,1/(1*365.25),'1 Year',fontsize='large',va='bottom')
+    ax2.text(200,1/(10*365.25),'10 Year',fontsize='large',va='bottom')
+    ax2.text(200,1/(100*365.25),'100 Year',fontsize='large',va='bottom')
+    ax2.text(200,1/(1000*365.25),'1000 Year',fontsize='large',va='bottom')
+    ax2.text(200,1/(10000*365.25),'10000 Year',fontsize='large',va='bottom')
     
-    plt.subplot(3,4,i+9)
+    plts=plt1+plt2+plt3
+    lbls=[l.get_label() for l in plts]
     
-    SPIM_E=s_K*ksnOI**s_n
-    STIM_E=np.zeros((len(eOI)))
+    plt.legend(plts,lbls,loc='best')
     
-  
-    wclb=stim.set_constants(mR_pop[i],k_e[i],dist_type='weibull',tau_c=t_c[i])
-    for j in range(len(eOI)):
-        [STIM_E[j],_]=stim.stim_one(ksnOI[j],cmb[i],wclb,sc=smb[i])
-    
-    
-    
-    plt.stem(ksnOI,SPIM_E-eOI,linefmt='k',orientation='horizontal',markerfmt='ko',
-             basefmt=' ',label='SPIM')
-    (ma,st,ba)=plt.stem(ksnOI,STIM_E-eOI,linefmt=color_list[i],orientation='horizontal',
-                        label='STIM')
-    plt.setp(ma,markerfacecolor=color_list[i],markeredgecolor=color_list[i])
-    plt.setp(ba,color='gray',linestyle=':')    
-    plt.legend(loc='best')
-    
-    plt.xlabel('$\Delta$ Erosion Rate [m/Myr]')
-    plt.ylabel('$k_{sn}$ [m]')
-    plt.ylim((0,550))
-    
-# f1.savefig('compare_stim_spim.pdf')    
-    
-    
+f1.savefig('threshold.pdf')
     
     
     
