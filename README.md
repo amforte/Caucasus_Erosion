@@ -53,6 +53,8 @@ Tests whether there is a detectable temporal trend in monthly means within the t
 Plots the results the cluster_and_optimize routine
 ### power_law_fits.py
 Algorithms for performing the bootstrap and monte-carlo fitting of the power law SPIM ksn - E relationship
+### stim_threshold_plot.py
+Generates plots comparing the thresholds for incision for the different clusters
 ### stochastic_threshold.py
 Implementation of the stochastic threshold model, including solutions for both inverse-gamma and weibull distributions
 ### tectonics_plot.py
