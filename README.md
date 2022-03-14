@@ -269,5 +269,3 @@ For each sampled basin for which an erosion rate is reported, we provide the str
   * cut_fill - mean of deviation between raw DEM and hydrologically conditioned DEM, negative numbers indicate conditioned elevations below raw elevations
   * seg_dist - legnth of segment in m, measured as stream distance
 
-## DEPRECATED
-The DEPRECATED folder contains older versions of code used in the previous version of the paper. These are maintained for reference purposes while the paper is under review and will be removed from the final release after acceptance.
